@@ -37,7 +37,7 @@ export interface Producto {
   subcategoria?: SubCategoria | undefined
   estado?: ProdEstado | undefined
   eventos?: Evento[] | undefined
-  itemsCombo?: Producto[] // productos que componen el combo | undefined
+  itemsCombo?: Producto[] | undefined // productos que componen el combo
 }
 
 export interface ProductoCombo {

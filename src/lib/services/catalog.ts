@@ -21,8 +21,8 @@ export const categoryService = {
   async update(id: number, input: { CatDescripcion: string }): Promise<Categoria> {
     if (USE_MOCK) {
       const idx = db.categorias.findIndex((x) => x.CatID === id)
-      db.categorias[idx] = { ...db.categorias[idx], ...input }
-      return delay(db.categorias[idx])
+      db.categorias[idx] = { ...db.categorias[idx]!, ...input }
+      return delay(db.categorias[idx]!)
     }
     const { data } = await api.put(`/categorias/${id}`, input)
     return data
@@ -68,8 +68,8 @@ export const subcategoryService = {
   ): Promise<SubCategoria> {
     if (USE_MOCK) {
       const idx = db.subcategorias.findIndex((x) => x.SubCatID === id)
-      db.subcategorias[idx] = { ...db.subcategorias[idx], ...input }
-      return delay(db.subcategorias[idx])
+      db.subcategorias[idx] = { ...db.subcategorias[idx]!, ...input }
+      return delay(db.subcategorias[idx]!)
     }
     const { data } = await api.put(`/subcategorias/${id}`, input)
     return data
@@ -105,8 +105,8 @@ export const prodEstadoService = {
   ): Promise<ProdEstado> {
     if (USE_MOCK) {
       const idx = db.prodEstados.findIndex((x) => x.ProdEstadoID === id)
-      db.prodEstados[idx] = { ...db.prodEstados[idx], ...input }
-      return delay(db.prodEstados[idx])
+      db.prodEstados[idx] = { ...db.prodEstados[idx]!, ...input }
+      return delay(db.prodEstados[idx]!)
     }
     const { data } = await api.put(`/producto-estados/${id}`, input)
     return data
@@ -139,8 +139,8 @@ export const eventoService = {
   async update(id: number, input: { EventoNombre: string }): Promise<Evento> {
     if (USE_MOCK) {
       const idx = db.eventos.findIndex((x) => x.EventoID === id)
-      db.eventos[idx] = { ...db.eventos[idx], ...input }
-      return delay(db.eventos[idx])
+      db.eventos[idx] = { ...db.eventos[idx]!, ...input }
+      return delay(db.eventos[idx]!)
     }
     const { data } = await api.put(`/eventos/${id}`, input)
     return data

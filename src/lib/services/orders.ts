@@ -100,11 +100,11 @@ export const orderService = {
     if (USE_MOCK) {
       const idx = db.pedidos.findIndex((x) => x.PedidoID === id)
       db.pedidos[idx] = {
-        ...db.pedidos[idx],
+        ...db.pedidos[idx]!,
         PedidoEstadoID,
         updatedAt: new Date().toISOString(),
       }
-      return delay(enrichPedido(db.pedidos[idx]))
+      return delay(enrichPedido(db.pedidos[idx]!))
     }
     const { data } = await api.put(`/pedidos/${id}`, { PedidoEstadoID })
     return data
@@ -146,8 +146,8 @@ export const pedidoEstadoService = {
   ): Promise<PedidoEstado> {
     if (USE_MOCK) {
       const idx = db.pedidoEstados.findIndex((x) => x.PedidoEstadoID === id)
-      db.pedidoEstados[idx] = { ...db.pedidoEstados[idx], ...input }
-      return delay(db.pedidoEstados[idx])
+      db.pedidoEstados[idx] = { ...db.pedidoEstados[idx]!, ...input }
+      return delay(db.pedidoEstados[idx]!)
     }
     const { data } = await api.put(`/pedido-estados/${id}`, input)
     return data

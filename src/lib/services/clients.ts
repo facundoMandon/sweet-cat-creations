@@ -39,8 +39,8 @@ export const clientService = {
   async update(id: number, input: ClienteInput): Promise<Cliente> {
     if (USE_MOCK) {
       const idx = db.clientes.findIndex((x) => x.ClienteID === id)
-      db.clientes[idx] = { ...db.clientes[idx], ...input }
-      return delay(db.clientes[idx])
+      db.clientes[idx] = { ...db.clientes[idx]!, ...input }
+      return delay(db.clientes[idx]!)
     }
     const { data } = await api.put(`/clientes/${id}`, input)
     return data

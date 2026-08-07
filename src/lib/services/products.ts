@@ -59,13 +59,13 @@ export const productService = {
       const idx = db.productos.findIndex((x) => x.ProdID === id)
       if (idx === -1) throw new Error('Producto no encontrado')
       db.productos[idx] = {
-        ...db.productos[idx],
+        ...db.productos[idx]!,
         ...input,
         ProdID: id,
         updatedAt: new Date().toISOString(),
       }
       syncRelations(id, input)
-      return delay(enrichProducto(db.productos[idx]))
+      return delay(enrichProducto(db.productos[idx]!))
     }
     const { data } = await api.put(`/productos/${id}`, input)
     return data

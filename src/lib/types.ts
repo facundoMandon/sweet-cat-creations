@@ -9,7 +9,7 @@ export interface SubCategoria {
   SubCatID: number
   SubCatDescripcion: string
   CatID: number
-  categoria?: Categoria
+  categoria?: Categoria | undefined
 }
 
 export interface ProdEstado {
@@ -31,13 +31,13 @@ export interface Producto {
   ProdImg: string | null
   EsCombo: boolean
   ProdPrecio: number
-  createdAt?: string
-  updatedAt?: string
+  createdAt?: string | undefined
+  updatedAt?: string | undefined
   // Relaciones (embebidas por conveniencia en el mock)
-  subcategoria?: SubCategoria
-  estado?: ProdEstado
-  eventos?: Evento[]
-  itemsCombo?: Producto[] // productos que componen el combo
+  subcategoria?: SubCategoria | undefined
+  estado?: ProdEstado | undefined
+  eventos?: Evento[] | undefined
+  itemsCombo?: Producto[] // productos que componen el combo | undefined
 }
 
 export interface ProductoCombo {
@@ -55,8 +55,8 @@ export interface Cliente {
   ClienteNombre: string
   ClienteTelefono: string | null
   ClienteDireccion: string | null
-  createdAt?: string
-  updatedAt?: string
+  createdAt?: string | undefined
+  updatedAt?: string | undefined
 }
 
 export interface PedidoEstado {
@@ -71,7 +71,7 @@ export interface ProductoPedido {
   Cantidad: number
   ProdPrecioUnitario: number
   TextoPersonalizado: string | null
-  producto?: Producto
+  producto?: Producto | undefined
 }
 
 export interface Pedido {
@@ -80,11 +80,11 @@ export interface Pedido {
   PedidoEstadoID: number
   ClienteID: number
   PedidoMontoTotal: number
-  createdAt?: string
-  updatedAt?: string
-  cliente?: Cliente
-  estado?: PedidoEstado
-  renglones?: ProductoPedido[]
+  createdAt?: string | undefined
+  updatedAt?: string | undefined
+  cliente?: Cliente | undefined
+  estado?: PedidoEstado | undefined
+  renglones?: ProductoPedido[] | undefined
 }
 
 export type NotiEstado = 'enviado' | 'fallido' | 'pendiente'
@@ -94,7 +94,7 @@ export interface Notificacion {
   NotiEstado: NotiEstado
   NotiFecha: string
   PedidoID: number
-  pedido?: Pedido
+  pedido?: Pedido | undefined
 }
 
 // --- Auth ---
@@ -105,7 +105,7 @@ export interface Usuario {
   nombre: string
   email: string
   rol: Rol
-  clienteId?: number
+  clienteId?: number | undefined
 }
 
 // --- Carrito ---

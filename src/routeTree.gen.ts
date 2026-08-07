@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as StoreRouteImport } from './routes/_store'
 import { Route as StoreIndexRouteImport } from './routes/_store.index'
 import { Route as StoreCatalogoRouteImport } from './routes/_store.catalogo'
+import { Route as StoreProductoIdRouteImport } from './routes/_store.producto.$id'
 
 const StoreRoute = StoreRouteImport.update({
   id: '/_store',
@@ -27,27 +28,40 @@ const StoreCatalogoRoute = StoreCatalogoRouteImport.update({
   path: '/catalogo',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreProductoIdRoute = StoreProductoIdRouteImport.update({
+  id: '/producto/$id',
+  path: '/producto/$id',
+  getParentRoute: () => StoreRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof StoreIndexRoute
   '/catalogo': typeof StoreCatalogoRoute
+  '/producto/$id': typeof StoreProductoIdRoute
 }
 export interface FileRoutesByTo {
   '/catalogo': typeof StoreCatalogoRoute
   '/': typeof StoreIndexRoute
+  '/producto/$id': typeof StoreProductoIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_store': typeof StoreRouteWithChildren
   '/_store/catalogo': typeof StoreCatalogoRoute
   '/_store/': typeof StoreIndexRoute
+  '/_store/producto/$id': typeof StoreProductoIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/catalogo'
+  fullPaths: '/' | '/catalogo' | '/producto/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/catalogo' | '/'
-  id: '__root__' | '/_store' | '/_store/catalogo' | '/_store/'
+  to: '/catalogo' | '/' | '/producto/$id'
+  id:
+    | '__root__'
+    | '/_store'
+    | '/_store/catalogo'
+    | '/_store/'
+    | '/_store/producto/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,17 +91,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreCatalogoRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/producto/$id': {
+      id: '/_store/producto/$id'
+      path: '/producto/$id'
+      fullPath: '/producto/$id'
+      preLoaderRoute: typeof StoreProductoIdRouteImport
+      parentRoute: typeof StoreRoute
+    }
   }
 }
 
 interface StoreRouteChildren {
   StoreCatalogoRoute: typeof StoreCatalogoRoute
   StoreIndexRoute: typeof StoreIndexRoute
+  StoreProductoIdRoute: typeof StoreProductoIdRoute
 }
 
 const StoreRouteChildren: StoreRouteChildren = {
   StoreCatalogoRoute: StoreCatalogoRoute,
   StoreIndexRoute: StoreIndexRoute,
+  StoreProductoIdRoute: StoreProductoIdRoute,
 }
 
 const StoreRouteWithChildren = StoreRoute._addFileChildren(StoreRouteChildren)

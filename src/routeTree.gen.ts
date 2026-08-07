@@ -17,6 +17,7 @@ import { Route as StoreCatalogoRouteImport } from './routes/_store.catalogo'
 import { Route as StoreCheckoutRouteImport } from './routes/_store.checkout'
 import { Route as StoreLoginRouteImport } from './routes/_store.login'
 import { Route as StorePedidosRouteImport } from './routes/_store.pedidos'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as StoreProductoIdRouteImport } from './routes/_store.producto.$id'
 
 const StoreRoute = StoreRouteImport.update({
@@ -58,6 +59,11 @@ const StorePedidosRoute = StorePedidosRouteImport.update({
   path: '/pedidos',
   getParentRoute: () => StoreRoute,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const StoreProductoIdRoute = StoreProductoIdRouteImport.update({
   id: '/producto/$id',
   path: '/producto/$id',
@@ -66,34 +72,36 @@ const StoreProductoIdRoute = StoreProductoIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof StoreIndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/carrito': typeof StoreCarritoRoute
   '/catalogo': typeof StoreCatalogoRoute
   '/checkout': typeof StoreCheckoutRoute
   '/login': typeof StoreLoginRoute
   '/pedidos': typeof StorePedidosRoute
+  '/admin/': typeof AdminIndexRoute
   '/producto/$id': typeof StoreProductoIdRoute
 }
 export interface FileRoutesByTo {
-  '/admin': typeof AdminRoute
   '/carrito': typeof StoreCarritoRoute
   '/catalogo': typeof StoreCatalogoRoute
   '/checkout': typeof StoreCheckoutRoute
   '/login': typeof StoreLoginRoute
   '/pedidos': typeof StorePedidosRoute
   '/': typeof StoreIndexRoute
+  '/admin': typeof AdminIndexRoute
   '/producto/$id': typeof StoreProductoIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_store': typeof StoreRouteWithChildren
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/_store/carrito': typeof StoreCarritoRoute
   '/_store/catalogo': typeof StoreCatalogoRoute
   '/_store/checkout': typeof StoreCheckoutRoute
   '/_store/login': typeof StoreLoginRoute
   '/_store/pedidos': typeof StorePedidosRoute
   '/_store/': typeof StoreIndexRoute
+  '/admin/': typeof AdminIndexRoute
   '/_store/producto/$id': typeof StoreProductoIdRoute
 }
 export interface FileRouteTypes {
@@ -106,16 +114,17 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/pedidos'
+    | '/admin/'
     | '/producto/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/admin'
     | '/carrito'
     | '/catalogo'
     | '/checkout'
     | '/login'
     | '/pedidos'
     | '/'
+    | '/admin'
     | '/producto/$id'
   id:
     | '__root__'
@@ -127,12 +136,13 @@ export interface FileRouteTypes {
     | '/_store/login'
     | '/_store/pedidos'
     | '/_store/'
+    | '/admin/'
     | '/_store/producto/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   StoreRoute: typeof StoreRouteWithChildren
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -193,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StorePedidosRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_store/producto/$id': {
       id: '/_store/producto/$id'
       path: '/producto/$id'
@@ -225,9 +242,19 @@ const StoreRouteChildren: StoreRouteChildren = {
 
 const StoreRouteWithChildren = StoreRoute._addFileChildren(StoreRouteChildren)
 
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   StoreRoute: StoreRouteWithChildren,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -15,11 +15,11 @@ import { Input, Select } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
 
 interface CatalogoSearch {
-  q?: string;
-  cat?: number;
-  sub?: number;
-  evento?: number;
-  combo?: boolean;
+  q?: string | undefined;
+  cat?: number | undefined;
+  sub?: number | undefined;
+  evento?: number | undefined;
+  combo?: boolean | undefined;
 }
 
 export const Route = createFileRoute("/_store/catalogo")({
@@ -76,7 +76,7 @@ function CatalogoPage() {
   });
 
   const setFiltro = (patch: Partial<CatalogoSearch>) => {
-    navigate({ search: (prev) => ({ ...prev, ...patch }) });
+    navigate({ search: (prev: CatalogoSearch) => ({ ...prev, ...patch }) });
   };
 
   const limpiar = () => navigate({ search: {} });
@@ -284,12 +284,11 @@ function CatalogoPage() {
             <EmptyState
               title="No encontramos dulces"
               description="Probá cambiando los filtros o buscando otra cosa."
-              action={
-                <Button variant="secondary" onClick={limpiar}>
-                  Limpiar filtros
-                </Button>
-              }
-            />
+            >
+              <Button variant="secondary" onClick={limpiar}>
+                Limpiar filtros
+              </Button>
+            </EmptyState>
           ) : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
               {filtrados.map((p, i) => (

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StoreRouteImport } from './routes/_store'
 import { Route as StoreIndexRouteImport } from './routes/_store.index'
+import { Route as StoreCatalogoRouteImport } from './routes/_store.catalogo'
 
 const StoreRoute = StoreRouteImport.update({
   id: '/_store',
@@ -21,24 +22,32 @@ const StoreIndexRoute = StoreIndexRouteImport.update({
   path: '/',
   getParentRoute: () => StoreRoute,
 } as any)
+const StoreCatalogoRoute = StoreCatalogoRouteImport.update({
+  id: '/catalogo',
+  path: '/catalogo',
+  getParentRoute: () => StoreRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof StoreIndexRoute
+  '/catalogo': typeof StoreCatalogoRoute
 }
 export interface FileRoutesByTo {
+  '/catalogo': typeof StoreCatalogoRoute
   '/': typeof StoreIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_store': typeof StoreRouteWithChildren
+  '/_store/catalogo': typeof StoreCatalogoRoute
   '/_store/': typeof StoreIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/catalogo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/_store' | '/_store/'
+  to: '/catalogo' | '/'
+  id: '__root__' | '/_store' | '/_store/catalogo' | '/_store/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -61,14 +70,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreIndexRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/catalogo': {
+      id: '/_store/catalogo'
+      path: '/catalogo'
+      fullPath: '/catalogo'
+      preLoaderRoute: typeof StoreCatalogoRouteImport
+      parentRoute: typeof StoreRoute
+    }
   }
 }
 
 interface StoreRouteChildren {
+  StoreCatalogoRoute: typeof StoreCatalogoRoute
   StoreIndexRoute: typeof StoreIndexRoute
 }
 
 const StoreRouteChildren: StoreRouteChildren = {
+  StoreCatalogoRoute: StoreCatalogoRoute,
   StoreIndexRoute: StoreIndexRoute,
 }
 

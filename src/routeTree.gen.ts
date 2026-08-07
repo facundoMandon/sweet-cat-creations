@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StoreRouteImport } from './routes/_store'
 import { Route as StoreIndexRouteImport } from './routes/_store.index'
+import { Route as StoreCarritoRouteImport } from './routes/_store.carrito'
 import { Route as StoreCatalogoRouteImport } from './routes/_store.catalogo'
 import { Route as StoreProductoIdRouteImport } from './routes/_store.producto.$id'
 
@@ -21,6 +22,11 @@ const StoreRoute = StoreRouteImport.update({
 const StoreIndexRoute = StoreIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreCarritoRoute = StoreCarritoRouteImport.update({
+  id: '/carrito',
+  path: '/carrito',
   getParentRoute: () => StoreRoute,
 } as any)
 const StoreCatalogoRoute = StoreCatalogoRouteImport.update({
@@ -36,10 +42,12 @@ const StoreProductoIdRoute = StoreProductoIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof StoreIndexRoute
+  '/carrito': typeof StoreCarritoRoute
   '/catalogo': typeof StoreCatalogoRoute
   '/producto/$id': typeof StoreProductoIdRoute
 }
 export interface FileRoutesByTo {
+  '/carrito': typeof StoreCarritoRoute
   '/catalogo': typeof StoreCatalogoRoute
   '/': typeof StoreIndexRoute
   '/producto/$id': typeof StoreProductoIdRoute
@@ -47,18 +55,20 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_store': typeof StoreRouteWithChildren
+  '/_store/carrito': typeof StoreCarritoRoute
   '/_store/catalogo': typeof StoreCatalogoRoute
   '/_store/': typeof StoreIndexRoute
   '/_store/producto/$id': typeof StoreProductoIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/catalogo' | '/producto/$id'
+  fullPaths: '/' | '/carrito' | '/catalogo' | '/producto/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/catalogo' | '/' | '/producto/$id'
+  to: '/carrito' | '/catalogo' | '/' | '/producto/$id'
   id:
     | '__root__'
     | '/_store'
+    | '/_store/carrito'
     | '/_store/catalogo'
     | '/_store/'
     | '/_store/producto/$id'
@@ -84,6 +94,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreIndexRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/carrito': {
+      id: '/_store/carrito'
+      path: '/carrito'
+      fullPath: '/carrito'
+      preLoaderRoute: typeof StoreCarritoRouteImport
+      parentRoute: typeof StoreRoute
+    }
     '/_store/catalogo': {
       id: '/_store/catalogo'
       path: '/catalogo'
@@ -102,12 +119,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface StoreRouteChildren {
+  StoreCarritoRoute: typeof StoreCarritoRoute
   StoreCatalogoRoute: typeof StoreCatalogoRoute
   StoreIndexRoute: typeof StoreIndexRoute
   StoreProductoIdRoute: typeof StoreProductoIdRoute
 }
 
 const StoreRouteChildren: StoreRouteChildren = {
+  StoreCarritoRoute: StoreCarritoRoute,
   StoreCatalogoRoute: StoreCatalogoRoute,
   StoreIndexRoute: StoreIndexRoute,
   StoreProductoIdRoute: StoreProductoIdRoute,

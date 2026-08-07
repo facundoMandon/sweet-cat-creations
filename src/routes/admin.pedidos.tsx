@@ -1,0 +1,184 @@
+import * as React from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { MessageSquare } from "lucide-react";
+import { orderService, pedidoEstadoService } from "@/lib/services/orders";
+import type { Pedido } from "@/lib/types";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { DataTable, type Column } from "@/components/admin/data-table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/field";
+import { Modal } from "@/components/ui/modal";
+import { useToast } from "@/components/ui/toast";
+
+export const Route = createFileRoute("/admin/pedidos")({
+  component: AdminPedidos,
+});
+
+function AdminPedidos() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  const [detalle, setDetalle] = React.useState<Pedido | null>(null);
+
+  const { data: pedidos, isLoading } = useQuery({
+    queryKey: ["pedidos"],
+    queryFn: orderService.list,
+  });
+  const { data: estados } = useQuery({
+    queryKey: ["pedidoEstados"],
+    queryFn: pedidoEstadoService.list,
+  });
+
+  const refresh = () => qc.invalidateQueries({ queryKey: ["pedidos"] });
+
+  const cambiarEstado = async (pedido: Pedido, estadoId: number) => {
+    await orderService.updateEstado(pedido.PedidoID, estadoId);
+    toast(`Pedido #${pedido.PedidoID} actualizado`);
+    refresh();
+  };
+
+  const columns: Column<Pedido>[] = [
+    {
+      key: "id",
+      header: "Pedido",
+      render: (p) => (
+        <button
+          onClick={() => setDetalle(p)}
+          className="font-display font-bold text-primary hover:underline"
+        >
+          #{p.PedidoID}
+        </button>
+      ),
+    },
+    {
+      key: "cliente",
+      header: "Cliente",
+      render: (p) => (
+        <div>
+          <p className="font-semibold">{p.cliente?.ClienteNombre}</p>
+          <p className="text-xs text-muted-foreground">
+            {p.cliente?.ClienteTelefono}
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: "entrega",
+      header: "Entrega",
+      render: (p) => formatDate(p.PedidoFechaEntrega),
+    },
+    {
+      key: "items",
+      header: "Renglones",
+      render: (p) => (
+        <Badge variant="muted">{(p.renglones ?? []).length} ítems</Badge>
+      ),
+    },
+    {
+      key: "total",
+      header: "Total",
+      render: (p) => (
+        <span className="font-display font-bold">
+          {formatCurrency(p.PedidoMontoTotal)}
+        </span>
+      ),
+    },
+    {
+      key: "estado",
+      header: "Estado",
+      render: (p) => (
+        <Select
+          value={p.PedidoEstadoID}
+          onChange={(e) => cambiarEstado(p, Number(e.target.value))}
+          aria-label={`Estado del pedido ${p.PedidoID}`}
+          className="w-44"
+        >
+          {(estados ?? []).map((e) => (
+            <option key={e.PedidoEstadoID} value={e.PedidoEstadoID}>
+              {e.PedidoEstadoDescripcion}
+            </option>
+          ))}
+        </Select>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <DataTable
+        title="Pedidos"
+        description="Seguimiento de pedidos y cambio de estado."
+        rows={pedidos ?? []}
+        columns={columns}
+        loading={isLoading}
+        getRowId={(p) => p.PedidoID}
+        searchFn={(p, q) =>
+          String(p.PedidoID).includes(q) ||
+          (p.cliente?.ClienteNombre ?? "").toLowerCase().includes(q)
+        }
+        onDelete={async (p) => {
+          await orderService.remove(p.PedidoID);
+          toast("Pedido eliminado");
+          refresh();
+        }}
+      />
+
+      <Modal
+        open={!!detalle}
+        onClose={() => setDetalle(null)}
+        title={`Pedido #${detalle?.PedidoID ?? ""}`}
+      >
+        {detalle ? (
+          <div className="flex flex-col gap-4">
+            <div className="rounded-2xl bg-muted p-4 text-sm">
+              <p className="font-display font-bold">
+                {detalle.cliente?.ClienteNombre}
+              </p>
+              <p className="text-muted-foreground">
+                {detalle.cliente?.ClienteDireccion}
+              </p>
+              <p className="text-muted-foreground">
+                Entrega: {formatDate(detalle.PedidoFechaEntrega)}
+              </p>
+            </div>
+            <ul className="flex flex-col gap-3">
+              {(detalle.renglones ?? []).map((r) => (
+                <li key={r.ProdPedidoID} className="flex gap-3">
+                  <img
+                    src={r.producto?.ProdImg || "/mascot-cat.png"}
+                    alt=""
+                    className="size-12 rounded-xl border-2 border-border object-cover"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-display text-sm font-bold">
+                      {r.Cantidad}× {r.producto?.ProdNombre}
+                    </p>
+                    {r.TextoPersonalizado ? (
+                      <p className="flex items-start gap-1.5 text-xs italic text-muted-foreground">
+                        <MessageSquare className="mt-0.5 size-3 shrink-0" />
+                        {r.TextoPersonalizado}
+                      </p>
+                    ) : null}
+                  </div>
+                  <span className="text-sm font-semibold">
+                    {formatCurrency(r.ProdPrecioUnitario * r.Cantidad)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-between border-t-2 border-dashed border-border pt-3">
+              <span className="font-display font-bold">Total</span>
+              <span className="font-display text-lg font-extrabold text-success-foreground">
+                {formatCurrency(detalle.PedidoMontoTotal)}
+              </span>
+            </div>
+            <Button variant="ghost" onClick={() => setDetalle(null)}>
+              Cerrar
+            </Button>
+          </div>
+        ) : null}
+      </Modal>
+    </>
+  );
+}

@@ -21,6 +21,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminCatalogoRouteImport } from './routes/admin.catalogo'
 import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
 import { Route as AdminEventosRouteImport } from './routes/admin.eventos'
+import { Route as AdminNotificacionesRouteImport } from './routes/admin.notificaciones'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminProductosRouteImport } from './routes/admin.productos'
 import { Route as StoreProductoIdRouteImport } from './routes/_store.producto.$id'
@@ -84,6 +85,11 @@ const AdminEventosRoute = AdminEventosRouteImport.update({
   path: '/eventos',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminNotificacionesRoute = AdminNotificacionesRouteImport.update({
+  id: '/notificaciones',
+  path: '/notificaciones',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPedidosRoute = AdminPedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/admin/catalogo': typeof AdminCatalogoRoute
   '/admin/clientes': typeof AdminClientesRoute
   '/admin/eventos': typeof AdminEventosRoute
+  '/admin/notificaciones': typeof AdminNotificacionesRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/productos': typeof AdminProductosRoute
   '/admin/': typeof AdminIndexRoute
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/admin/catalogo': typeof AdminCatalogoRoute
   '/admin/clientes': typeof AdminClientesRoute
   '/admin/eventos': typeof AdminEventosRoute
+  '/admin/notificaciones': typeof AdminNotificacionesRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/productos': typeof AdminProductosRoute
   '/': typeof StoreIndexRoute
@@ -143,6 +151,7 @@ export interface FileRoutesById {
   '/admin/catalogo': typeof AdminCatalogoRoute
   '/admin/clientes': typeof AdminClientesRoute
   '/admin/eventos': typeof AdminEventosRoute
+  '/admin/notificaciones': typeof AdminNotificacionesRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/productos': typeof AdminProductosRoute
   '/_store/': typeof StoreIndexRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/admin/catalogo'
     | '/admin/clientes'
     | '/admin/eventos'
+    | '/admin/notificaciones'
     | '/admin/pedidos'
     | '/admin/productos'
     | '/admin/'
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/admin/catalogo'
     | '/admin/clientes'
     | '/admin/eventos'
+    | '/admin/notificaciones'
     | '/admin/pedidos'
     | '/admin/productos'
     | '/'
@@ -193,6 +204,7 @@ export interface FileRouteTypes {
     | '/admin/catalogo'
     | '/admin/clientes'
     | '/admin/eventos'
+    | '/admin/notificaciones'
     | '/admin/pedidos'
     | '/admin/productos'
     | '/_store/'
@@ -291,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEventosRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/notificaciones': {
+      id: '/admin/notificaciones'
+      path: '/notificaciones'
+      fullPath: '/admin/notificaciones'
+      preLoaderRoute: typeof AdminNotificacionesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/pedidos': {
       id: '/admin/pedidos'
       path: '/pedidos'
@@ -341,6 +360,7 @@ interface AdminRouteChildren {
   AdminCatalogoRoute: typeof AdminCatalogoRoute
   AdminClientesRoute: typeof AdminClientesRoute
   AdminEventosRoute: typeof AdminEventosRoute
+  AdminNotificacionesRoute: typeof AdminNotificacionesRoute
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminProductosRoute: typeof AdminProductosRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -350,6 +370,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCatalogoRoute: AdminCatalogoRoute,
   AdminClientesRoute: AdminClientesRoute,
   AdminEventosRoute: AdminEventosRoute,
+  AdminNotificacionesRoute: AdminNotificacionesRoute,
   AdminPedidosRoute: AdminPedidosRoute,
   AdminProductosRoute: AdminProductosRoute,
   AdminIndexRoute: AdminIndexRoute,

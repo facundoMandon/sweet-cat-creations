@@ -18,6 +18,7 @@ import { Route as StoreCheckoutRouteImport } from './routes/_store.checkout'
 import { Route as StoreLoginRouteImport } from './routes/_store.login'
 import { Route as StorePedidosRouteImport } from './routes/_store.pedidos'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminClientesRouteImport } from './routes/admin.clientes'
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminProductosRouteImport } from './routes/admin.productos'
 import { Route as StoreProductoIdRouteImport } from './routes/_store.producto.$id'
@@ -66,6 +67,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminClientesRoute = AdminClientesRouteImport.update({
+  id: '/clientes',
+  path: '/clientes',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminPedidosRoute = AdminPedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
@@ -90,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof StoreCheckoutRoute
   '/login': typeof StoreLoginRoute
   '/pedidos': typeof StorePedidosRoute
+  '/admin/clientes': typeof AdminClientesRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/productos': typeof AdminProductosRoute
   '/admin/': typeof AdminIndexRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof StoreCheckoutRoute
   '/login': typeof StoreLoginRoute
   '/pedidos': typeof StorePedidosRoute
+  '/admin/clientes': typeof AdminClientesRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/productos': typeof AdminProductosRoute
   '/': typeof StoreIndexRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/_store/checkout': typeof StoreCheckoutRoute
   '/_store/login': typeof StoreLoginRoute
   '/_store/pedidos': typeof StorePedidosRoute
+  '/admin/clientes': typeof AdminClientesRoute
   '/admin/pedidos': typeof AdminPedidosRoute
   '/admin/productos': typeof AdminProductosRoute
   '/_store/': typeof StoreIndexRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/pedidos'
+    | '/admin/clientes'
     | '/admin/pedidos'
     | '/admin/productos'
     | '/admin/'
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/pedidos'
+    | '/admin/clientes'
     | '/admin/pedidos'
     | '/admin/productos'
     | '/'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/_store/checkout'
     | '/_store/login'
     | '/_store/pedidos'
+    | '/admin/clientes'
     | '/admin/pedidos'
     | '/admin/productos'
     | '/_store/'
@@ -234,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/clientes': {
+      id: '/admin/clientes'
+      path: '/clientes'
+      fullPath: '/admin/clientes'
+      preLoaderRoute: typeof AdminClientesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/pedidos': {
       id: '/admin/pedidos'
       path: '/pedidos'
@@ -281,12 +300,14 @@ const StoreRouteChildren: StoreRouteChildren = {
 const StoreRouteWithChildren = StoreRoute._addFileChildren(StoreRouteChildren)
 
 interface AdminRouteChildren {
+  AdminClientesRoute: typeof AdminClientesRoute
   AdminPedidosRoute: typeof AdminPedidosRoute
   AdminProductosRoute: typeof AdminProductosRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminClientesRoute: AdminClientesRoute,
   AdminPedidosRoute: AdminPedidosRoute,
   AdminProductosRoute: AdminProductosRoute,
   AdminIndexRoute: AdminIndexRoute,

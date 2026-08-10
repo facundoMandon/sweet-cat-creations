@@ -101,12 +101,15 @@ export interface Notificacion {
 export type Rol = 'admin' | 'cliente'
 
 export interface Usuario {
-  id: number
+  id: string | number
   nombre: string
   email: string
   rol: Rol
-  clienteId?: number | undefined
+  telefono?: string | null | undefined
+  direccion?: string | null | undefined
+  clienteId?: number | null | undefined
 }
+
 
 // --- Carrito ---
 export interface CartItem {

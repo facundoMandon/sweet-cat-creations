@@ -19,7 +19,8 @@ interface AuthContextValue {
     telefono?: string
     direccion?: string
   }) => Promise<Usuario>
-  logout: () => void
+  logout: () => Promise<void>
+  refresh: () => Promise<void>
 }
 
 const AuthContext = React.createContext<AuthContextValue | null>(null)
@@ -34,24 +35,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [usuario, setUsuario] = React.useState<Usuario | null>(null)
   const [loading, setLoading] = React.useState(true)
 
-  // Rehidratar sesión desde localStorage al montar
+  const persist = React.useCallback((u: Usuario | null, token?: string | null) => {
+    if (token !== undefined) setToken(token)
+    if (u) window.localStorage.setItem(USER_KEY, JSON.stringify(u))
+    else window.localStorage.removeItem(USER_KEY)
+    setUsuario(u)
+  }, [])
+
+  // Rehidratación optimista + validación real contra el backend (verifica
+  // usuario, contraseña ya validada al emitir el token, y rol vigente).
   React.useEffect(() => {
+    let active = true
     try {
       const token = getToken()
       const stored = window.localStorage.getItem(USER_KEY)
       if (token && stored) setUsuario(JSON.parse(stored))
     } catch {
       // ignore
-    } finally {
-      setLoading(false)
     }
-  }, [])
+    void authService.session().then((u) => {
+      if (!active) return
+      persist(u)
+      setLoading(false)
+    })
+    return () => {
+      active = false
+    }
+  }, [persist])
 
-  const persist = (u: Usuario, token: string) => {
-    setToken(token)
-    window.localStorage.setItem(USER_KEY, JSON.stringify(u))
-    setUsuario(u)
-  }
+  // Renovación silenciosa del access token (dura 15 min).
+  React.useEffect(() => {
+    if (!usuario) return
+    const id = window.setInterval(
+      () => {
+        void authService.refresh().catch(() => persist(null, null))
+      },
+      12 * 60 * 1000,
+    )
+    return () => window.clearInterval(id)
+  }, [usuario, persist])
 
   const login = async (email: string, password: string) => {
     const { token, usuario } = await authService.login(email, password)
@@ -65,11 +87,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return usuario
   }
 
-  const logout = () => {
-    setToken(null)
-    window.localStorage.removeItem(USER_KEY)
-    setUsuario(null)
+  const logout = async () => {
+    await authService.logout()
+    persist(null, null)
   }
+
+  const refreshSession = async () => {
+    const u = await authService.session()
+    persist(u)
+  }
+
 
   const value: AuthContextValue = {
     usuario,
@@ -79,6 +106,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     register,
     logout,
+    refresh: refreshSession,
+
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

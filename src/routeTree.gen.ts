@@ -25,6 +25,11 @@ import { Route as AdminNotificacionesRouteImport } from './routes/admin.notifica
 import { Route as AdminPedidosRouteImport } from './routes/admin.pedidos'
 import { Route as AdminProductosRouteImport } from './routes/admin.productos'
 import { Route as StoreProductoIdRouteImport } from './routes/_store.producto.$id'
+import { Route as ApiPublicAuthLoginRouteImport } from './routes/api/public/auth/login'
+import { Route as ApiPublicAuthLogoutRouteImport } from './routes/api/public/auth/logout'
+import { Route as ApiPublicAuthMeRouteImport } from './routes/api/public/auth/me'
+import { Route as ApiPublicAuthRefreshRouteImport } from './routes/api/public/auth/refresh'
+import { Route as ApiPublicAuthRegisterRouteImport } from './routes/api/public/auth/register'
 
 const StoreRoute = StoreRouteImport.update({
   id: '/_store',
@@ -105,6 +110,31 @@ const StoreProductoIdRoute = StoreProductoIdRouteImport.update({
   path: '/producto/$id',
   getParentRoute: () => StoreRoute,
 } as any)
+const ApiPublicAuthLoginRoute = ApiPublicAuthLoginRouteImport.update({
+  id: '/api/public/auth/login',
+  path: '/api/public/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAuthLogoutRoute = ApiPublicAuthLogoutRouteImport.update({
+  id: '/api/public/auth/logout',
+  path: '/api/public/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAuthMeRoute = ApiPublicAuthMeRouteImport.update({
+  id: '/api/public/auth/me',
+  path: '/api/public/auth/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAuthRefreshRoute = ApiPublicAuthRefreshRouteImport.update({
+  id: '/api/public/auth/refresh',
+  path: '/api/public/auth/refresh',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAuthRegisterRoute = ApiPublicAuthRegisterRouteImport.update({
+  id: '/api/public/auth/register',
+  path: '/api/public/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof StoreIndexRoute
@@ -122,6 +152,11 @@ export interface FileRoutesByFullPath {
   '/admin/productos': typeof AdminProductosRoute
   '/admin/': typeof AdminIndexRoute
   '/producto/$id': typeof StoreProductoIdRoute
+  '/api/public/auth/login': typeof ApiPublicAuthLoginRoute
+  '/api/public/auth/logout': typeof ApiPublicAuthLogoutRoute
+  '/api/public/auth/me': typeof ApiPublicAuthMeRoute
+  '/api/public/auth/refresh': typeof ApiPublicAuthRefreshRoute
+  '/api/public/auth/register': typeof ApiPublicAuthRegisterRoute
 }
 export interface FileRoutesByTo {
   '/carrito': typeof StoreCarritoRoute
@@ -138,6 +173,11 @@ export interface FileRoutesByTo {
   '/': typeof StoreIndexRoute
   '/admin': typeof AdminIndexRoute
   '/producto/$id': typeof StoreProductoIdRoute
+  '/api/public/auth/login': typeof ApiPublicAuthLoginRoute
+  '/api/public/auth/logout': typeof ApiPublicAuthLogoutRoute
+  '/api/public/auth/me': typeof ApiPublicAuthMeRoute
+  '/api/public/auth/refresh': typeof ApiPublicAuthRefreshRoute
+  '/api/public/auth/register': typeof ApiPublicAuthRegisterRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -157,6 +197,11 @@ export interface FileRoutesById {
   '/_store/': typeof StoreIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/_store/producto/$id': typeof StoreProductoIdRoute
+  '/api/public/auth/login': typeof ApiPublicAuthLoginRoute
+  '/api/public/auth/logout': typeof ApiPublicAuthLogoutRoute
+  '/api/public/auth/me': typeof ApiPublicAuthMeRoute
+  '/api/public/auth/refresh': typeof ApiPublicAuthRefreshRoute
+  '/api/public/auth/register': typeof ApiPublicAuthRegisterRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -176,6 +221,11 @@ export interface FileRouteTypes {
     | '/admin/productos'
     | '/admin/'
     | '/producto/$id'
+    | '/api/public/auth/login'
+    | '/api/public/auth/logout'
+    | '/api/public/auth/me'
+    | '/api/public/auth/refresh'
+    | '/api/public/auth/register'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/carrito'
@@ -192,6 +242,11 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/producto/$id'
+    | '/api/public/auth/login'
+    | '/api/public/auth/logout'
+    | '/api/public/auth/me'
+    | '/api/public/auth/refresh'
+    | '/api/public/auth/register'
   id:
     | '__root__'
     | '/_store'
@@ -210,11 +265,21 @@ export interface FileRouteTypes {
     | '/_store/'
     | '/admin/'
     | '/_store/producto/$id'
+    | '/api/public/auth/login'
+    | '/api/public/auth/logout'
+    | '/api/public/auth/me'
+    | '/api/public/auth/refresh'
+    | '/api/public/auth/register'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   StoreRoute: typeof StoreRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
+  ApiPublicAuthLoginRoute: typeof ApiPublicAuthLoginRoute
+  ApiPublicAuthLogoutRoute: typeof ApiPublicAuthLogoutRoute
+  ApiPublicAuthMeRoute: typeof ApiPublicAuthMeRoute
+  ApiPublicAuthRefreshRoute: typeof ApiPublicAuthRefreshRoute
+  ApiPublicAuthRegisterRoute: typeof ApiPublicAuthRegisterRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -331,6 +396,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreProductoIdRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/api/public/auth/login': {
+      id: '/api/public/auth/login'
+      path: '/api/public/auth/login'
+      fullPath: '/api/public/auth/login'
+      preLoaderRoute: typeof ApiPublicAuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/logout': {
+      id: '/api/public/auth/logout'
+      path: '/api/public/auth/logout'
+      fullPath: '/api/public/auth/logout'
+      preLoaderRoute: typeof ApiPublicAuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/me': {
+      id: '/api/public/auth/me'
+      path: '/api/public/auth/me'
+      fullPath: '/api/public/auth/me'
+      preLoaderRoute: typeof ApiPublicAuthMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/refresh': {
+      id: '/api/public/auth/refresh'
+      path: '/api/public/auth/refresh'
+      fullPath: '/api/public/auth/refresh'
+      preLoaderRoute: typeof ApiPublicAuthRefreshRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/register': {
+      id: '/api/public/auth/register'
+      path: '/api/public/auth/register'
+      fullPath: '/api/public/auth/register'
+      preLoaderRoute: typeof ApiPublicAuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -381,17 +481,12 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   StoreRoute: StoreRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
+  ApiPublicAuthLoginRoute: ApiPublicAuthLoginRoute,
+  ApiPublicAuthLogoutRoute: ApiPublicAuthLogoutRoute,
+  ApiPublicAuthMeRoute: ApiPublicAuthMeRoute,
+  ApiPublicAuthRefreshRoute: ApiPublicAuthRefreshRoute,
+  ApiPublicAuthRegisterRoute: ApiPublicAuthRegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

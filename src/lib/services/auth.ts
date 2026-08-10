@@ -1,43 +1,43 @@
-import { api, USE_MOCK } from '../api-client'
-import { db, delay, nextId } from '../mock-db'
+import axios from 'axios'
+
+import { API_URL, getToken, setToken } from '../api-client'
 import type { Usuario } from '../types'
 
 export interface AuthResult {
   token: string
+  expiresIn: number
   usuario: Usuario
 }
 
-// Cuentas demo para el preview (modo mock). En producción esto lo valida tu API.
-const DEMO_USERS: Array<{ password: string } & Usuario> = [
-  {
-    id: 1,
-    nombre: 'Admin Black Cats',
-    email: 'admin@blackcats.com',
-    password: 'admin123',
-    rol: 'admin',
+/**
+ * Cliente dedicado a la autenticación propia (JWT emitido por este mismo
+ * proyecto en /api/public/auth/*). `withCredentials` permite que viaje la
+ * cookie httpOnly con el refresh token.
+ */
+const authApi = axios.create({
+  baseURL: API_URL ? `${API_URL}/api/public/auth` : '/api/public/auth',
+  headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
+})
+
+authApi.interceptors.response.use(
+  (res) => res,
+  (error) => {
+    const message =
+      error?.response?.data?.message ||
+      error?.message ||
+      'Ocurrió un error inesperado'
+    return Promise.reject(new Error(message))
   },
-  {
-    id: 2,
-    nombre: 'María López',
-    email: 'cliente@blackcats.com',
-    password: 'cliente123',
-    rol: 'cliente',
-    clienteId: 1,
-  },
-]
+)
 
 export const authService = {
   async login(email: string, password: string): Promise<AuthResult> {
-    if (USE_MOCK) {
-      const found = DEMO_USERS.find(
-        (u) => u.email === email && u.password === password,
-      )
-      if (!found) throw new Error('Correo o contraseña incorrectos')
-      const { password: _pw, ...usuario } = found
-      return delay({ token: `mock.jwt.${found.id}.${Date.now()}`, usuario })
-    }
-    // Backend real: POST /api/auth/login -> { token, usuario }
-    const { data } = await api.post('/auth/login', { email, password })
+    const { data } = await authApi.post<AuthResult>('/login', {
+      email,
+      password,
+    })
+    setToken(data.token)
     return data
   },
 
@@ -48,34 +48,54 @@ export const authService = {
     telefono?: string
     direccion?: string
   }): Promise<AuthResult> {
-    if (USE_MOCK) {
-      if (DEMO_USERS.some((u) => u.email === input.email)) {
-        throw new Error('Ese correo ya está registrado')
-      }
-      const clienteId = nextId(db.clientes, 'ClienteID')
-      db.clientes.push({
-        ClienteID: clienteId,
-        ClienteNombre: input.nombre,
-        ClienteTelefono: input.telefono ?? null,
-        ClienteDireccion: input.direccion ?? null,
-        createdAt: new Date().toISOString(),
-      })
-      const usuario: Usuario = {
-        id: 100 + clienteId,
-        nombre: input.nombre,
-        email: input.email,
-        rol: 'cliente',
-        clienteId,
-      }
-      return delay({ token: `mock.jwt.${usuario.id}.${Date.now()}`, usuario })
-    }
-    const { data } = await api.post('/auth/register', input)
+    const { data } = await authApi.post<AuthResult>('/register', input)
+    setToken(data.token)
     return data
   },
 
-  async me(): Promise<Usuario> {
-    // Backend real: GET /api/auth/me con el token en el header
-    const { data } = await api.get('/auth/me')
+  /** Renueva el access token usando la cookie httpOnly de refresh. */
+  async refresh(): Promise<AuthResult> {
+    const { data } = await authApi.post<AuthResult>('/refresh')
+    setToken(data.token)
     return data
+  },
+
+  /** Devuelve el usuario del access token vigente (valida usuario y rol). */
+  async me(): Promise<Usuario> {
+    const token = getToken()
+    if (!token) throw new Error('No hay sesión activa')
+    const { data } = await authApi.get<Usuario>('/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    return data
+  },
+
+  /**
+   * Devuelve la sesión vigente: intenta con el access token y, si expiró,
+   * hace un refresh transparente. `null` si no hay sesión.
+   */
+  async session(): Promise<Usuario | null> {
+    try {
+      return await this.me()
+    } catch {
+      try {
+        const renewed = await this.refresh()
+        return renewed.usuario
+      } catch {
+        setToken(null)
+        return null
+      }
+    }
+  },
+
+  async logout(): Promise<void> {
+    try {
+      await authApi.post('/logout')
+    } finally {
+      setToken(null)
+      if (typeof window !== 'undefined') {
+        window.localStorage.removeItem('blackcats_user')
+      }
+    }
   },
 }

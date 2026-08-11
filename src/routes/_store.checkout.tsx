@@ -7,6 +7,7 @@ import { useAuth } from "@/context/auth-context";
 import { orderService } from "@/lib/services/orders";
 import { clientService } from "@/lib/services/clients";
 import { formatCurrency } from "@/lib/format";
+import { buildOrderMessage, whatsappUrl } from "@/lib/whatsapp";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/field";

@@ -81,14 +81,23 @@ function AdminDashboard() {
 
   return (
     <div className="flex flex-col gap-6">
-      <header>
-        <h1 className="font-display text-2xl font-extrabold md:text-3xl">
-          Dashboard
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Resumen de la operación de Black Cats.
-        </p>
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-extrabold md:text-3xl">
+            Dashboard
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Resumen de la operación de Black Cats.
+          </p>
+        </div>
+        <Link
+          to="/admin/calendario"
+          className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 font-display text-sm font-bold text-primary-foreground"
+        >
+          <CalendarDays className="size-4" /> Calendario de pedidos
+        </Link>
       </header>
+
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map(({ label, value, icon: Icon, tone }, i) => (

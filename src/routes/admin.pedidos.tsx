@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { MessageSquare } from "lucide-react";
 import { orderService, pedidoEstadoService } from "@/lib/services/orders";
 import type { Pedido } from "@/lib/types";
@@ -10,6 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
+import {
+  syncPedidoRecordatorios,
+  deletePedidoRecordatorios,
+} from "@/lib/calendar.functions";
 import { useToast } from "@/components/ui/toast";
 
 export const Route = createFileRoute("/admin/pedidos")({
@@ -20,6 +25,8 @@ function AdminPedidos() {
   const qc = useQueryClient();
   const { toast } = useToast();
   const [detalle, setDetalle] = React.useState<Pedido | null>(null);
+  const syncCalendar = useServerFn(syncPedidoRecordatorios);
+  const borrarCalendar = useServerFn(deletePedidoRecordatorios);
 
   const { data: pedidos, isLoading } = useQuery({
     queryKey: ["pedidos"],
@@ -34,7 +41,25 @@ function AdminPedidos() {
 
   const cambiarEstado = async (pedido: Pedido, estadoId: number) => {
     await orderService.updateEstado(pedido.PedidoID, estadoId);
-    toast(`Pedido #${pedido.PedidoID} actualizado`);
+    const desc = (estados ?? [])
+      .find((e) => e.PedidoEstadoID === estadoId)
+      ?.PedidoEstadoDescripcion.toLowerCase() ?? "";
+    const cancelado = desc.includes("cancel");
+    // Mantiene sincronizados los recordatorios de Google Calendar
+    await syncCalendar({
+      data: {
+        pedidoId: pedido.PedidoID,
+        clienteNombre: pedido.cliente?.ClienteNombre ?? "Cliente",
+        fechaEntrega: pedido.PedidoFechaEntrega,
+        cancelado,
+      },
+    }).catch(() => undefined);
+    qc.invalidateQueries({ queryKey: ["calendarEventos"] });
+    toast(
+      cancelado
+        ? `Pedido #${pedido.PedidoID} cancelado - recordatorios eliminados`
+        : `Pedido #${pedido.PedidoID} actualizado`,
+    );
     refresh();
   };
 
@@ -119,6 +144,10 @@ function AdminPedidos() {
         }
         onDelete={async (p) => {
           await orderService.remove(p.PedidoID);
+          await borrarCalendar({ data: { pedidoId: p.PedidoID } }).catch(
+            () => undefined,
+          );
+          qc.invalidateQueries({ queryKey: ["calendarEventos"] });
           toast("Pedido eliminado");
           refresh();
         }}

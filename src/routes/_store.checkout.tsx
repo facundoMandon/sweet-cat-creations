@@ -1,10 +1,12 @@
 import * as React from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
 import { CheckCircle2, PartyPopper } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useAuth } from "@/context/auth-context";
 import { orderService } from "@/lib/services/orders";
+import { syncPedidoRecordatorios } from "@/lib/calendar.functions";
 import { clientService } from "@/lib/services/clients";
 import { formatCurrency } from "@/lib/format";
 import { buildOrderMessage, whatsappUrl } from "@/lib/whatsapp";
@@ -38,6 +40,7 @@ function CheckoutPage() {
   const { usuario, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const syncCalendar = useServerFn(syncPedidoRecordatorios);
 
   const [nombre, setNombre] = React.useState(usuario?.nombre ?? "");
   const [telefono, setTelefono] = React.useState("");
@@ -81,6 +84,16 @@ function CheckoutPage() {
         PedidoFechaEntrega: fecha,
         items,
       });
+      // Recordatorios en el Google Calendar del vendedor (7 y 1 día antes)
+      if (fecha) {
+        void syncCalendar({
+          data: {
+            pedidoId: pedido.PedidoID,
+            clienteNombre: nombre.trim(),
+            fechaEntrega: fecha,
+          },
+        }).catch(() => undefined);
+      }
       const mensaje = buildOrderMessage({
         pedidoId: pedido.PedidoID,
         cliente: nombre.trim(),

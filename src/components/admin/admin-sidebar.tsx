@@ -7,6 +7,7 @@ import {
   Users,
   ClipboardList,
   Bell,
+  CalendarDays,
   Tags,
   Sparkles,
   LogOut,

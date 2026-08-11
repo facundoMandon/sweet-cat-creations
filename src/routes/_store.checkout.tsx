@@ -118,9 +118,15 @@ function CheckoutPage() {
             ¡Pedido #{pedidoId} confirmado!
           </h1>
           <p className="text-muted-foreground">
-            Te vamos a contactar para coordinar la entrega. ¡Gracias por elegir
-            Black Cats! <PartyPopper className="inline size-4" />
+            Te enviamos el detalle por WhatsApp para coordinar la entrega.
+            ¡Gracias por elegir Black Cats!{" "}
+            <PartyPopper className="inline size-4" />
           </p>
+          {waLink ? (
+            <a href={waLink} target="_blank" rel="noopener noreferrer">
+              <Button size="lg">Enviar pedido por WhatsApp</Button>
+            </a>
+          ) : null}
           <div className="flex flex-wrap justify-center gap-3">
             {isAuthenticated ? (
               <Link to="/pedidos">

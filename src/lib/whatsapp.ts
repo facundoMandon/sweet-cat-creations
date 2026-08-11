@@ -2,7 +2,7 @@ import { formatCurrency, formatDate } from './format'
 import type { CartItem } from './types'
 
 // Número del vendedor en formato internacional, solo dígitos (país + área + número)
-export const VENDEDOR_WHATSAPP = '5491122334455'
+export const VENDEDOR_WHATSAPP = '5493412288582'
 
 export interface OrderMessageInput {
   pedidoId: number

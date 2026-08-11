@@ -81,9 +81,20 @@ function CheckoutPage() {
         PedidoFechaEntrega: fecha,
         items,
       });
+      const mensaje = buildOrderMessage({
+        pedidoId: pedido.PedidoID,
+        cliente: nombre.trim(),
+        direccion: direccion.trim(),
+        fechaEntrega: fecha,
+        items,
+        total,
+      });
+      const link = whatsappUrl(mensaje);
       setPedidoId(pedido.PedidoID);
+      setWaLink(link);
       clear();
-      toast("¡Pedido confirmado!");
+      toast("¡Pedido confirmado! Abriendo WhatsApp...");
+      window.open(link, "_blank", "noopener,noreferrer");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No pudimos crear el pedido");
     } finally {

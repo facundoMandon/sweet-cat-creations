@@ -7,6 +7,7 @@ import { useAuth } from "@/context/auth-context";
 import { orderService } from "@/lib/services/orders";
 import { clientService } from "@/lib/services/clients";
 import { formatCurrency } from "@/lib/format";
+import { buildOrderMessage, whatsappUrl } from "@/lib/whatsapp";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/field";
@@ -44,6 +45,7 @@ function CheckoutPage() {
   const [fecha, setFecha] = React.useState("");
   const [enviando, setEnviando] = React.useState(false);
   const [pedidoId, setPedidoId] = React.useState<number | null>(null);
+  const [waLink, setWaLink] = React.useState<string>("");
   const [error, setError] = React.useState("");
 
   React.useEffect(() => {
@@ -79,9 +81,20 @@ function CheckoutPage() {
         PedidoFechaEntrega: fecha,
         items,
       });
+      const mensaje = buildOrderMessage({
+        pedidoId: pedido.PedidoID,
+        cliente: nombre.trim(),
+        direccion: direccion.trim(),
+        fechaEntrega: fecha,
+        items,
+        total,
+      });
+      const link = whatsappUrl(mensaje);
       setPedidoId(pedido.PedidoID);
+      setWaLink(link);
       clear();
-      toast("¡Pedido confirmado!");
+      toast("¡Pedido confirmado! Abriendo WhatsApp...");
+      window.open(link, "_blank", "noopener,noreferrer");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No pudimos crear el pedido");
     } finally {
@@ -105,9 +118,15 @@ function CheckoutPage() {
             ¡Pedido #{pedidoId} confirmado!
           </h1>
           <p className="text-muted-foreground">
-            Te vamos a contactar para coordinar la entrega. ¡Gracias por elegir
-            Black Cats! <PartyPopper className="inline size-4" />
+            Te enviamos el detalle por WhatsApp para coordinar la entrega.
+            ¡Gracias por elegir Black Cats!{" "}
+            <PartyPopper className="inline size-4" />
           </p>
+          {waLink ? (
+            <a href={waLink} target="_blank" rel="noopener noreferrer">
+              <Button size="lg">Enviar pedido por WhatsApp</Button>
+            </a>
+          ) : null}
           <div className="flex flex-wrap justify-center gap-3">
             {isAuthenticated ? (
               <Link to="/pedidos">

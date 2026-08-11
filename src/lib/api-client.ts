@@ -5,7 +5,7 @@ import axios from "axios";
  * Definí VITE_API_URL (ej: http://localhost:3000) para consumir tu API Express real.
  * Si no está definida, la app funciona con la capa de datos mock incluida.
  */
-export const API_URL =
+export const API_URL = 
   (import.meta.env["VITE_API_URL"] as string | undefined) ?? "";
 export const USE_MOCK = !API_URL;
 

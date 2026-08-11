@@ -4,7 +4,7 @@ import type { Pedido, PedidoEstado, CartItem } from '../types'
 
 export interface CheckoutInput {
   ClienteID: number
-  PedidoFechaEntrega: string | null
+  PedidoFechaEntrega: string
   items: CartItem[]
 }
 

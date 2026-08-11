@@ -4,8 +4,8 @@ import type { Cliente, Notificacion } from '../types'
 
 export interface ClienteInput {
   ClienteNombre: string
-  ClienteTelefono: string | null
-  ClienteDireccion: string | null
+  ClienteTelefono: string
+  ClienteDireccion: string
 }
 
 export const clientService = {

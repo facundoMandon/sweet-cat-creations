@@ -19,7 +19,9 @@ import { Button } from "@/components/ui/button";
 
 const links = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin/calendario", label: "Calendario", icon: CalendarDays },
   { to: "/admin/productos", label: "Productos", icon: Package },
+
   { to: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
   { to: "/admin/clientes", label: "Clientes", icon: Users },
   { to: "/admin/catalogo", label: "Categorías", icon: Tags },

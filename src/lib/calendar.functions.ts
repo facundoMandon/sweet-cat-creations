@@ -54,7 +54,7 @@ export const listRecordatorios = createServerFn({ method: "GET" }).handler(
         eventos: items.map((e) => ({
           id: e.id,
           titulo: e.summary ?? "",
-          descripcion: e.descripcion ?? e.description ?? "",
+          descripcion: e.description ?? "",
           url: e.location ?? "",
           htmlLink: e.htmlLink ?? "",
           fecha: e.start?.date ?? e.start?.dateTime?.slice(0, 10) ?? "",

@@ -117,7 +117,7 @@ export interface SyncInput {
   clienteNombre: string
   fechaEntrega: string | null
   /** Si el pedido está cancelado, se eliminan los recordatorios. */
-  cancelado?: boolean
+  cancelado?: boolean | undefined
 }
 
 /**

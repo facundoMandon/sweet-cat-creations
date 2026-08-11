@@ -17,9 +17,9 @@ export function buildOrderMessage(input: OrderMessageInput): string {
   const lineas = input.items.map((it) => {
     const subtotal = it.producto.ProdPrecio * it.cantidad
     const texto = it.textoPersonalizado
-      ? `\n   ✍️ Texto: "${it.textoPersonalizado}"`
+      ? `\n   (Texto personalizado): "${it.textoPersonalizado}"`
       : ''
-    return `• ${it.producto.ProdNombre} — x${it.cantidad} — ${formatCurrency(subtotal)}${texto}`
+    return `• ${it.producto.ProdNombre} - x${it.cantidad} - ${formatCurrency(subtotal)}${texto}`
   })
 
   return [
@@ -36,7 +36,7 @@ export function buildOrderMessage(input: OrderMessageInput): string {
     `*TOTAL: ${formatCurrency(input.total)}*`,
     '',
     '¡Muchas gracias por su atención! Quedo a la espera de la confirmación del pedido.',
-    'Saludos cordiales 🐱🍬 — Black Cats',
+    'Saludos cordiales - Black Cats',
   ].join('\n')
 }
 

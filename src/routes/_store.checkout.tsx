@@ -45,6 +45,7 @@ function CheckoutPage() {
   const [fecha, setFecha] = React.useState("");
   const [enviando, setEnviando] = React.useState(false);
   const [pedidoId, setPedidoId] = React.useState<number | null>(null);
+  const [waLink, setWaLink] = React.useState<string>("");
   const [error, setError] = React.useState("");
 
   React.useEffect(() => {

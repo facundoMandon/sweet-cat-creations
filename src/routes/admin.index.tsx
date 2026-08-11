@@ -41,6 +41,19 @@ function AdminDashboard() {
   );
   const pendientes = (pedidos ?? []).filter((p) => p.PedidoEstadoID === 1);
 
+  // --- Nuevo: pedidos del mes actual (por fecha de entrega) ---
+const hoy = new Date();
+const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0, 23, 59, 59, 999);
+
+const pedidosDelMes = (pedidos ?? []).filter((p) => {
+  const fechaEntrega = new Date(p.PedidoFechaEntrega);
+  return fechaEntrega >= inicioMes && fechaEntrega <= finMes;
+});
+
+const nombreMes = hoy.toLocaleDateString("es-ES", { month: "long" });
+const nombreMesCapitalizado = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+
   const stats = [
     {
       label: "Facturado",
@@ -49,8 +62,8 @@ function AdminDashboard() {
       tone: "bg-success/20 text-success-foreground",
     },
     {
-      label: "Pedidos",
-      value: String(pedidos?.length ?? 0),
+      label: "Pedidos de " + nombreMesCapitalizado, //Pedidos del mes actual
+      value: String(pedidosDelMes.length),
       icon: ClipboardList,
       tone: "bg-primary/15 text-primary",
     },

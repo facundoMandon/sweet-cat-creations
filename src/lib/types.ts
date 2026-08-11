@@ -53,8 +53,8 @@ export interface ProdEvento {
 export interface Cliente {
   ClienteID: number
   ClienteNombre: string
-  ClienteTelefono: string | null
-  ClienteDireccion: string | null
+  ClienteTelefono: string
+  ClienteDireccion: string
   createdAt?: string | undefined
   updatedAt?: string | undefined
 }
@@ -76,7 +76,7 @@ export interface ProductoPedido {
 
 export interface Pedido {
   PedidoID: number
-  PedidoFechaEntrega: string | null
+  PedidoFechaEntrega: string
   PedidoEstadoID: number
   ClienteID: number
   PedidoMontoTotal: number

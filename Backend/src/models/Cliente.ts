@@ -44,6 +44,12 @@ Cliente.init(
       type: DataTypes.STRING(250),
       allowNull: false,
     },
+
+    ClienteEmail: {
+      type: DataTypes.STRING(150),
+      allowNull: true,
+    },
+
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,

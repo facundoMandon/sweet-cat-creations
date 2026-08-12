@@ -36,12 +36,12 @@ const testimonios = [
   {
     nombre: "Cami R.",
     texto:
-      "Pedí una tableta con dedicatoria para mi novio y llegó impecable. ¡El gatito de la caja es lo más!",
+      "Pedí una tableta con dedicatoria para mi novio y llegó impecable. ¡El mejor emprendimiento de Rosario!",
   },
   {
     nombre: "Nacho P.",
     texto:
-      "El combo de cumpleaños fue el centro de la mesa. Los macarons volaron en dos minutos.",
+      "El combo de cumpleaños fue el centro de la mesa. Se nota la dedicación.",
   },
   {
     nombre: "Flor M.",
@@ -76,13 +76,13 @@ function HomePage() {
             className="flex flex-col gap-5"
           >
             <span className="inline-flex w-fit items-center gap-2 rounded-full bg-primary/15 px-4 py-1.5 font-display text-sm font-bold text-primary">
-              Repostería artesanal kawaii
+              Productos artesanales
             </span>
             <h1 className="font-display text-4xl font-extrabold leading-tight text-balance md:text-6xl">
               Dulces que te hacen <span className="text-primary">ronronear</span>
             </h1>
             <p className="max-w-md text-lg leading-relaxed text-muted-foreground">
-              Chocolates personalizados, postres y combos adorables hechos con
+              Chocolates, postres y combos personalizados hechos con
               mucho amor por Black Cats. Endulzá cada momento especial.
             </p>
             <div className="flex flex-wrap gap-3">
@@ -187,7 +187,7 @@ function HomePage() {
           {[
             { icon: HeartHandshake, t: "100% personalizable", d: "Dedicatorias y colores a tu gusto." },
             { icon: Truck, d: "Coordiná día y horario de entrega.", t: "Entrega programada" },
-            { icon: Star, t: "Ingredientes premium", d: "Cacao seleccionado y receta artesanal." },
+            { icon: Star, t: "Ingredientes premium", d: "Materiales seleccionados y receta artesanal." },
           ].map(({ icon: Icon, t, d }) => (
             <Card key={t} className="bg-card/90">
               <CardContent className="flex flex-col items-center gap-2 p-6 text-center">

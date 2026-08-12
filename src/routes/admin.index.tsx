@@ -56,7 +56,7 @@ const nombreMesCapitalizado = nombreMes.charAt(0).toUpperCase() + nombreMes.slic
 
   const stats = [
     {
-      label: "Facturado",
+      label: "Ingresos",
       value: formatCurrency(facturado),
       icon: DollarSign,
       tone: "bg-success/20 text-success-foreground",

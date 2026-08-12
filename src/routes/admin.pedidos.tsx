@@ -95,7 +95,7 @@ function AdminPedidos() {
     },
     {
       key: "items",
-      header: "Renglones",
+      header: "Productos",
       render: (p) => (
         <Badge variant="muted">{(p.renglones ?? []).length} ítems</Badge>
       ),

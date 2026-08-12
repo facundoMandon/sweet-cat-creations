@@ -14,6 +14,9 @@ export class Cliente extends Model<
   declare ClienteNombre: string;
   declare ClienteTelefono: string;
   declare ClienteDireccion: string;
+  /** Email del usuario asociado (permite resolver la propiedad del recurso). */
+  declare ClienteEmail: string | null;
+
 
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;

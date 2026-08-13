@@ -1,32 +1,30 @@
-import { Request, Response } from 'express';
-import asyncHandler from '../utils/asyncHandler';
-import * as clienteService from '../services/cliente.service';
+import type { Request, Response } from "express";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import * as service from "../services/cliente.service.js";
+import { requiredId } from "../utils/validation.js";
 
-export const createCliente = asyncHandler(async (req: Request, res: Response) => {
-  const cliente = await clienteService.createCliente(req.body);
-  res.status(201).json({ success: true, data: cliente });
+export const listClientes = asyncHandler(async (req: Request, res: Response) => {
+  res.json({ success: true, ...(await service.listClientes(req.query as never)) });
 });
 
 export const getCliente = asyncHandler(async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const cliente = await clienteService.getClienteById(id);
-  res.json({ success: true, data: cliente });
+  const id = requiredId(req.params["id"], "id");
+  res.json({ success: true, data: await service.getCliente(id, req.user) });
 });
 
-export const listClientes = asyncHandler(async (req: Request, res: Response) => {
-  const { q, page, limit } = req.query as any;
-  const result = await clienteService.findClientes({ q, page: Number(page || 1), limit: Number(limit || 20) });
-  res.json({ success: true, ...result });
+export const createCliente = asyncHandler(async (req: Request, res: Response) => {
+  const data = await service.createCliente(req.body ?? {});
+  res.status(201).json({ success: true, data });
 });
 
 export const updateCliente = asyncHandler(async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const cliente = await clienteService.updateCliente(id, req.body);
-  res.json({ success: true, data: cliente });
+  const id = requiredId(req.params["id"], "id");
+  const data = await service.updateCliente(id, req.body ?? {}, req.user);
+  res.json({ success: true, data });
 });
 
 export const deleteCliente = asyncHandler(async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const cliente = await clienteService.softDeleteCliente(id);
-  res.json({ success: true, data: cliente });
+  const id = requiredId(req.params["id"], "id");
+  await service.deleteCliente(id);
+  res.json({ success: true });
 });

@@ -14,7 +14,7 @@ async function start() {
 
     console.log("Conectado a Neon PostgreSQL");
 
-    await sequelize.sync( );
+    await sequelize.sync( { alter: true } );
 
     console.log("Tablas sincronizadas");
 

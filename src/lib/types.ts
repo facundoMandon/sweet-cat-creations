@@ -50,15 +50,6 @@ export interface ProdEvento {
   EventoID: number
 }
 
-export interface Cliente {
-  ClienteID: number
-  ClienteNombre: string
-  ClienteTelefono: string
-  ClienteDireccion: string
-  createdAt?: string | undefined
-  updatedAt?: string | undefined
-}
-
 export interface PedidoEstado {
   PedidoEstadoID: number
   PedidoEstadoDescripcion: string
@@ -108,6 +99,18 @@ export interface Usuario {
   telefono?: string | null | undefined
   direccion?: string | null | undefined
   clienteId?: number | null | undefined
+}
+
+
+export interface Cliente {
+  ClienteID: number
+  ClienteNombre: string
+  ClienteEmail: string | null
+  ClienteTelefono: string
+  ClienteDireccion: string
+  Rol: Rol
+  createdAt?: string | undefined
+  updatedAt?: string | undefined
 }
 
 

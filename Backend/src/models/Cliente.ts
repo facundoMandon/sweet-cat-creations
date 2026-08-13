@@ -14,6 +14,8 @@ export class Cliente extends Model<
   declare ClienteNombre: string;
   declare ClienteTelefono: string;
   declare ClienteDireccion: string;
+  declare Rol: "cliente" | "admin" ;
+  declare ClienteContraseniaHash: string;
   /** Email del usuario asociado (permite resolver la propiedad del recurso). */
   declare ClienteEmail: string | null;
 
@@ -47,9 +49,20 @@ Cliente.init(
 
     ClienteEmail: {
       type: DataTypes.STRING(150),
-      allowNull: true,
+      allowNull: false,
     },
 
+    ClienteContraseniaHash: {
+      type: DataTypes.STRING(256),
+      allowNull: false, // Obligatorio para poder hacer login
+    },
+
+
+    Rol: {
+      type: DataTypes.ENUM("cliente", "admin"),
+      allowNull: false,
+      defaultValue: "cliente",
+    },
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -66,4 +79,4 @@ Cliente.init(
     tableName: "clientes",
     timestamps: true,
   }
-);
+); 

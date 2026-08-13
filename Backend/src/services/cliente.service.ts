@@ -17,6 +17,7 @@ const SORTS: Record<string, string | string[]> = {
   nombre: "ClienteNombre",
   fecha: "createdAt",
   id: "ClienteID",
+  rol: "Rol", // ✏️ 1. Habilitado ordenamiento por Rol
 };
 
 export interface AuthUser {
@@ -30,18 +31,25 @@ export interface AuthUser {
 export function assertOwnership(user: AuthUser | undefined, cliente: Cliente): void {
   if (!user) throw forbidden();
   if (user.rol === "admin") return;
-  const mismoId = user.clienteId !== undefined && user.clienteId === cliente.ClienteID;
+
+  // ✏️ 2. Conversión segura para comparar id numérico contra clienteID
+  const userIdNum = user.clienteId ?? Number(user.id);
+  const mismoId = !isNaN(userIdNum) && userIdNum === cliente.ClienteID;
   const mismoEmail =
     !!cliente.ClienteEmail &&
     cliente.ClienteEmail.toLowerCase() === user.email.toLowerCase();
+
   if (!mismoId && !mismoEmail) throw forbidden("No podés acceder a este cliente");
 }
 
 function parseInput(body: Record<string, unknown>, partial = false) {
   const out: Record<string, unknown> = {};
+
   if (!partial || body["ClienteNombre"] !== undefined) {
     out["ClienteNombre"] = requiredString(body["ClienteNombre"], "ClienteNombre", 150);
   }
+
+  // 🔒 Teléfono y Dirección SIGUEN SIENDO OBLIGATORIOS (requiredString)
   if (!partial || body["ClienteTelefono"] !== undefined) {
     out["ClienteTelefono"] = requiredString(
       body["ClienteTelefono"],
@@ -56,6 +64,15 @@ function parseInput(body: Record<string, unknown>, partial = false) {
       250
     );
   }
+
+  // ✏️ 3. Parseo y sanitización del Rol
+  if (body["Rol"] !== undefined) {
+    const rolInput = requiredString(body["Rol"], "Rol", 50);
+    out["Rol"] = rolInput === "admin" ? "admin" : "cliente";
+  } else if (!partial) {
+    out["Rol"] = "cliente"; // Rol por defecto en creación
+  }
+
   if (body["ClienteEmail"] !== undefined) {
     const email = optionalString(body["ClienteEmail"], "ClienteEmail", 150);
     out["ClienteEmail"] = email ? email.toLowerCase() : null;
@@ -76,6 +93,7 @@ export async function listClientes(
           { ClienteNombre: { [Op.iLike]: `%${q}%` } },
           { ClienteEmail: { [Op.iLike]: `%${q}%` } },
           { ClienteTelefono: { [Op.iLike]: `%${q}%` } },
+          { Rol: { [Op.iLike]: `%${q}%` } }, // ✏️ 4. Permite filtrar por Rol en las búsquedas
         ],
       }
     : {};
@@ -101,8 +119,18 @@ export async function getCliente(id: number, user: AuthUser | undefined) {
   return toJSON(cliente);
 }
 
-export async function createCliente(body: Record<string, unknown>) {
+// ✏️ 5. Se agregó `user?: AuthUser` para controlar asignación de roles al crear
+export async function createCliente(
+  body: Record<string, unknown>,
+  user?: AuthUser
+) {
   const data = parseInput(body);
+
+  // Si NO es admin el que crea la cuenta (ej. registro público), se fuerza el rol a "cliente"
+  if (user?.rol !== "admin") {
+    data["Rol"] = "cliente";
+  }
+
   const email = data["ClienteEmail"] as string | null | undefined;
   if (email) {
     const dup = await Cliente.findOne({ where: { ClienteEmail: email } });
@@ -120,10 +148,12 @@ export async function updateCliente(
   assertOwnership(user, cliente);
   const data = parseInput(body, true);
 
-  // Sólo el admin puede reasignar el email (identidad del cliente).
-  if (data["ClienteEmail"] !== undefined && user?.rol !== "admin") {
+  // ✏️ 6. Protección: sólo el admin puede modificar email Y asignación de rol
+  if (user?.rol !== "admin") {
     delete data["ClienteEmail"];
+    delete data["Rol"];
   }
+
   const email = data["ClienteEmail"] as string | null | undefined;
   if (email) {
     const dup = await Cliente.findOne({

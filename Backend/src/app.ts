@@ -1,8 +1,8 @@
 import express from "express";
 import cors from 'cors';
-import apiRouter from './routes';
-import { errorHandler } from './middlewares/errorHandler';
-import { notFoundHandler } from './middlewares/notFoundHandler';
+import apiRouter from './routes/index.js';
+import { errorHandler } from './middlewares/errorHandler.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
 
 const app = express();
 

@@ -253,6 +253,10 @@ export async function cambiarEstado(
   const pedido = await Pedido.findByPk(id);
   if (!pedido) throw notFound("Pedido no encontrado");
 
+  // Regla 13/14: un cliente sólo puede operar sobre sus propios pedidos.
+  const clienteDueno = await Cliente.findByPk(pedido.ClienteID);
+  if (clienteDueno) assertOwnership(user, clienteDueno);
+
   const actual = await pedidoEstadoNombre(pedido.PedidoEstadoID);
   const destino = nuevoNombre ?? (await pedidoEstadoNombre(nuevoId));
   if (!actual || !destino) throw badRequest("Estado de pedido desconocido");
@@ -263,12 +267,24 @@ export async function cambiarEstado(
     throw conflict(`Transición no permitida: ${actual} -> ${destino}`);
   }
 
+  // Regla 14: el cliente sólo puede cancelar; sólo el admin puede entregar.
+  if (user && user.rol !== "admin" && destino !== "Cancelado") {
+    throw forbidden("Sólo un administrador puede marcar un pedido como entregado");
+  }
+
   await sequelize.transaction(async (t) => {
     await pedido.update({ PedidoEstadoID: nuevoId }, { transaction: t });
   });
 
   const cliente = await Cliente.findByPk(pedido.ClienteID);
-  await notificacionService.notificarCambioEstado(pedido, cliente, actual, destino);
+
+  // Regla 7: si canceló el cliente (no el admin), notificar al administrador.
+  if (destino === "Cancelado" && user && user.rol !== "admin") {
+    await notificacionService.notificarCancelacionPorCliente(pedido, cliente);
+  } else {
+    await notificacionService.notificarCambioEstado(pedido, cliente, actual, destino);
+  }
+
   if (destino === "Cancelado" || destino === "Entregado") {
     await calendarService.deleteRecordatorios(pedido.PedidoID);
   } else {
@@ -286,6 +302,10 @@ export async function reprogramarPedido(
 ) {
   const pedido = await Pedido.findByPk(id);
   if (!pedido) throw notFound("Pedido no encontrado");
+
+  const clienteDueno = await Cliente.findByPk(pedido.ClienteID);
+  if (clienteDueno) assertOwnership(user, clienteDueno);
+
   const actual = await pedidoEstadoNombre(pedido.PedidoEstadoID);
   if (actual !== "Pendiente") {
     throw conflict("Sólo se pueden reprogramar pedidos pendientes");
@@ -299,8 +319,98 @@ export async function reprogramarPedido(
 }
 
 /**
+ * Modificación del contenido de un pedido (renglones y/o fecha de entrega).
+ * Sólo se permite mientras el pedido esté Pendiente, y sólo el dueño (o un
+ * admin) puede hacerlo. Todas las reglas de negocio se vuelven a validar
+ * (productos existentes, no inactivos, no sin stock, precios desde la BD).
+ * Toda la operación corre dentro de una transacción.
+ */
+export async function updatePedido(
+  id: number,
+  body: Record<string, unknown>,
+  user: AuthUser | undefined
+) {
+  const pedido = await Pedido.findByPk(id);
+  if (!pedido) throw notFound("Pedido no encontrado");
+
+  const clienteDueno = await Cliente.findByPk(pedido.ClienteID);
+  if (clienteDueno) assertOwnership(user, clienteDueno);
+
+  const actual = await pedidoEstadoNombre(pedido.PedidoEstadoID);
+  if (actual !== "Pendiente") {
+    throw conflict("Sólo se pueden modificar pedidos pendientes");
+  }
+
+  const fechaEntrega =
+    body["PedidoFechaEntrega"] !== undefined
+      ? parseFechaEntrega(body["PedidoFechaEntrega"])
+      : pedido.PedidoFechaEntrega;
+
+  const renglonesInput = body["renglones"] ?? body["items"];
+  const renglones =
+    renglonesInput !== undefined ? parseRenglones(renglonesInput) : null;
+
+  const inactivoId = await prodEstadoId("Inactivo");
+  const sinStockId = await prodEstadoId("Sin Stock");
+
+  await sequelize.transaction(async (t) => {
+    if (renglones) {
+      await ProductoPedido.destroy({
+        where: { PedidoID: id },
+        transaction: t,
+      });
+
+      let total = 0;
+      for (const item of renglones) {
+        const producto = await Producto.findByPk(item.ProdID, {
+          transaction: t,
+        });
+        if (!producto) throw notFound(`Producto ${item.ProdID} inexistente`);
+        if (producto.ProdEstadoID === inactivoId) {
+          throw conflict(`El producto "${producto.ProdNombre}" está inactivo`);
+        }
+        if (producto.ProdEstadoID === sinStockId) {
+          throw conflict(`El producto "${producto.ProdNombre}" no tiene stock`);
+        }
+
+        const precio = Number(producto.ProdPrecio);
+        total += precio * item.Cantidad;
+
+        await ProductoPedido.create(
+          {
+            PedidoID: id,
+            ProdID: producto.ProdID,
+            Cantidad: item.Cantidad,
+            ProdPrecioUnitario: precio,
+            TextoPersonalizado: item.TextoPersonalizado,
+          } as never,
+          { transaction: t }
+        );
+      }
+
+      await pedido.update(
+        {
+          PedidoFechaEntrega: fechaEntrega,
+          PedidoMontoTotal: Number(total.toFixed(2)),
+        },
+        { transaction: t }
+      );
+    } else {
+      await pedido.update({ PedidoFechaEntrega: fechaEntrega }, { transaction: t });
+    }
+  });
+
+  // Efectos externos: sólo después del COMMIT, y sincronizando el mismo
+  // evento de Calendar (no se crean eventos duplicados).
+  const actualizado = (await Pedido.findByPk(id))!;
+  await calendarService.syncRecordatorios(actualizado, clienteDueno);
+
+  return getPedido(id, user);
+}
+
+/**
  * Eliminación física: sólo pedidos cancelados. El resto se conserva como
- * historial (los renglones se borran en cascada).
+ * historial (los renglones se borran en cascada). Operación administrativa.
  */
 export async function deletePedido(id: number): Promise<void> {
   const pedido = await Pedido.findByPk(id);

@@ -20,6 +20,12 @@ export const createPedido = asyncHandler(async (req: Request, res: Response) => 
   res.status(201).json({ success: true, data });
 });
 
+export const updatePedido = asyncHandler(async (req: Request, res: Response) => {
+  const id = requiredId(req.params["id"], "id");
+  const data = await service.updatePedido(id, req.body ?? {}, req.user);
+  res.json({ success: true, data });
+});
+
 export const cambiarEstado = asyncHandler(async (req: Request, res: Response) => {
   const id = requiredId(req.params["id"], "id");
   const data = await service.cambiarEstado(id, req.body ?? {}, req.user);

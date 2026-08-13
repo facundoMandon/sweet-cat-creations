@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import * as clienteCtrl from '../controllers/cliente.controller';
-import { requireAuth } from '../middlewares/auth.middleware';
-import { requireAdmin } from '../middlewares/role.middleware';
+import * as clienteCtrl from '../controllers/cliente.controller.js';
+import { authMiddleware } from '../middlewares/auth.middleware.js';
+import { requireAdmin } from '../middlewares/role.middleware.js';
 
+const requireAuth = authMiddleware;
 const router = Router();
 
 router.post('/', clienteCtrl.createCliente);

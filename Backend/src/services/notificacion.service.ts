@@ -69,6 +69,26 @@ export async function notificarPedidoCreado(
   );
 }
 
+/**
+ * Notificación especial cuando el pedido fue cancelado por el propio cliente
+ * (y no por el administrador). El registro queda igualmente asociado al
+ * pedido; en un canal real esto dispararía un aviso al administrador.
+ */
+export async function notificarCancelacionPorCliente(
+  pedido: Pedido,
+  cliente: Cliente | null
+): Promise<void> {
+  console.log(
+    "[notificacion] Aviso al administrador: el pedido fue cancelado por el cliente",
+    { pedidoId: pedido.PedidoID, cliente: cliente?.ClienteNombre ?? pedido.ClienteID }
+  );
+  await registrarNotificacion(
+    pedido,
+    cliente,
+    `El cliente canceló el pedido N° ${pedido.PedidoID}`
+  );
+}
+
 export async function notificarCambioEstado(
   pedido: Pedido,
   cliente: Cliente | null,

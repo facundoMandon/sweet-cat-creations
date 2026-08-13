@@ -10,11 +10,11 @@ const PORT = process.env.PORT || 3001;
 
 async function start() {
   try {
-    await sequelize.authenticate();
+    await sequelize.authenticate( );
 
     console.log("Conectado a Neon PostgreSQL");
 
-    await sequelize.sync();
+    await sequelize.sync( );
 
     console.log("Tablas sincronizadas");
 

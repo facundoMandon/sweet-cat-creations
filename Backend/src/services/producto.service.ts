@@ -120,7 +120,6 @@ export async function listProductos(
     order: [[column as string, dir]],
     limit: page.limit,
     offset: page.offset,
-    distinct: true,
     subQuery: false,
   };
 

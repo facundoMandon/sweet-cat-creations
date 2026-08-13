@@ -1,32 +1,125 @@
+import { Notificacion, Pedido, Cliente } from "../models/index.js";
+import { notFound } from "../utils/AppError.js";
+import { toJSON } from "../utils/serialize.js";
+import {
+  parsePagination,
+  parseSort,
+  paginated,
+  type Paginated,
+} from "../utils/query.js";
+import { optionalId, optionalString } from "../utils/validation.js";
+
+const SORTS: Record<string, string | string[]> = {
+  fecha: "NotiFecha",
+  id: "NotifID",
+};
+
 /**
- * Servicio de notificaciones (placeholder).
- * En producción reemplazar por integración con cola / proveedor de emails.
+ * Envío real de la notificación. Hoy escribe en el log; para producción
+ * reemplazar por el proveedor de email/WhatsApp manteniendo la misma firma.
  */
-
-export async function enqueueEmail(to: string, subject: string, html: string) {
-  console.log('[notificacion] enqueueEmail', { to, subject });
-  // Implementar encolar job (Bull/Redis) o enviar inmediatamente por SMTP/SendGrid.
-  return Promise.resolve({ queued: true });
+async function enviar(
+  pedido: Pedido,
+  cliente: Cliente | null,
+  asunto: string
+): Promise<boolean> {
+  const destino = cliente?.ClienteEmail ?? null;
+  if (!destino) {
+    console.warn("[notificacion] pedido sin email de destino", pedido.PedidoID);
+    return false;
+  }
+  console.log("[notificacion]", { destino, asunto, pedido: pedido.PedidoID });
+  return true;
 }
 
-export async function notifyPedidoCreated(pedido: any, cliente: any) {
-  const to = cliente.ClienteEmail ?? cliente.email;
-  if (!to) {
-    console.warn('notifyPedidoCreated: cliente sin email', cliente.id);
-    return;
+/**
+ * Registra (y "envía") una notificación asociada a un pedido.
+ * Se invoca siempre DESPUÉS del COMMIT: un fallo acá nunca revierte el pedido.
+ */
+export async function registrarNotificacion(
+  pedido: Pedido,
+  cliente: Cliente | null,
+  asunto: string
+): Promise<void> {
+  let estado: "enviado" | "fallido" = "fallido";
+  try {
+    estado = (await enviar(pedido, cliente, asunto)) ? "enviado" : "fallido";
+  } catch (err) {
+    console.error("[notificacion] error de envío", err);
   }
-  const subject = `Confirmación pedido #${pedido.id}`;
-  const html = `<p>Hola ${cliente.nombre}, su pedido #${pedido.id} fue creado. Total: ${pedido.total}</p>`;
-  return enqueueEmail(to, subject, html);
+  try {
+    await Notificacion.create({
+      NotiEstado: estado,
+      NotiFecha: new Date(),
+      PedidoID: pedido.PedidoID,
+    } as never);
+  } catch (err) {
+    console.error("[notificacion] no se pudo registrar", err);
+  }
 }
 
-export async function notifyPedidoStatusChanged(pedido: any, oldStatus: string, newStatus: string) {
-  const to = pedido.clienteEmail ?? pedido.cliente?.ClienteEmail ?? pedido.cliente?.email;
-  if (!to) {
-    console.warn('notifyPedidoStatusChanged: sin email disponible para pedido', pedido.id);
-    return;
+export async function notificarPedidoCreado(
+  pedido: Pedido,
+  cliente: Cliente | null
+): Promise<void> {
+  await registrarNotificacion(
+    pedido,
+    cliente,
+    `Confirmación del pedido N° ${pedido.PedidoID}`
+  );
+}
+
+export async function notificarCambioEstado(
+  pedido: Pedido,
+  cliente: Cliente | null,
+  estadoAnterior: string,
+  estadoNuevo: string
+): Promise<void> {
+  await registrarNotificacion(
+    pedido,
+    cliente,
+    `Pedido N° ${pedido.PedidoID}: ${estadoAnterior} -> ${estadoNuevo}`
+  );
+}
+
+export async function listNotificaciones(
+  query: Record<string, unknown>
+): Promise<Paginated<unknown>> {
+  const page = parsePagination(query);
+  const [column, dir] = parseSort(query, SORTS, "fecha");
+
+  const where: Record<string, unknown> = {};
+  const pedidoId = optionalId(query["pedidoId"], "pedidoId");
+  if (pedidoId) where["PedidoID"] = pedidoId;
+  const estado = optionalString(query["estado"], "estado", 20);
+  if (estado) where["NotiEstado"] = estado;
+
+  const { rows, count } = await Notificacion.findAndCountAll({
+    where,
+    order: [[column as string, dir]],
+    limit: page.limit,
+    offset: page.offset,
+    include: [{ model: Pedido, as: "pedido" }],
+  });
+  return paginated(toJSON<unknown[]>(rows), count, page);
+}
+
+/** Reintenta el envío de una notificación fallida. */
+export async function reenviarNotificacion(id: number) {
+  const noti = await Notificacion.findByPk(id);
+  if (!noti) throw notFound("Notificación no encontrada");
+  const pedido = await Pedido.findByPk(noti.PedidoID);
+  if (!pedido) throw notFound("Pedido asociado inexistente");
+  const cliente = await Cliente.findByPk(pedido.ClienteID);
+
+  let estado: "enviado" | "fallido" = "fallido";
+  try {
+    estado = (await enviar(pedido, cliente, `Reenvío pedido N° ${pedido.PedidoID}`))
+      ? "enviado"
+      : "fallido";
+  } catch (err) {
+    console.error("[notificacion] reintento fallido", err);
   }
-  const subject = `Pedido #${pedido.id} - ${newStatus}`;
-  const html = `<p>El estado de su pedido #${pedido.id} cambió de ${oldStatus} a ${newStatus}.</p>`;
-  return enqueueEmail(to, subject, html);
+  await noti.update({ NotiEstado: estado, NotiFecha: new Date() });
+  return toJSON(noti);
 }

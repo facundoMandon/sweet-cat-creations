@@ -6,7 +6,9 @@ import { notFoundHandler } from './middlewares/notFoundHandler.js';
 
 const app = express();
 
-app.use(cors({ origin: true, credentials: true }));
+const allowedOrigins = ['https://blackcats.lovable.app'];
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

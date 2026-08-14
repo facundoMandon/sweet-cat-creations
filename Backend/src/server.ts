@@ -19,7 +19,7 @@ async function start() {
     console.log("Tablas sincronizadas");
 
     app.listen(PORT, () => {
-      console.log(`Backend ejecutándose en http://localhost:${PORT}`);
+      console.log(`Backend ejecutándose en ${PORT}`);
     });
   } catch (error) {
     console.error("Error iniciando backend:", error);

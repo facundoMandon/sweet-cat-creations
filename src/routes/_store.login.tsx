@@ -182,6 +182,34 @@ function LoginPage() {
                   placeholder="••••••••"
                 />
               </Field>
+              {modo === "registro" ? (
+                <>
+                  <Field label="Teléfono" htmlFor="telefono">
+                    <Input
+                      id="telefono"
+                      type="tel"
+                      value={telefono}
+                      maxLength={50}
+                      onChange={(e) => setTelefono(e.target.value)}
+                      placeholder="11 5555 5555"
+                    />
+                  </Field>
+                  <Field
+                    label="Dirección"
+                    htmlFor="direccion"
+                    hint="La usamos como dirección de envío por defecto; podés cambiarla en cada pedido."
+                  >
+                    <Input
+                      id="direccion"
+                      value={direccion}
+                      maxLength={250}
+                      onChange={(e) => setDireccion(e.target.value)}
+                      placeholder="Av. Siempreviva 742"
+                    />
+                  </Field>
+                </>
+              ) : null}
+
 
               {error ? (
                 <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive">

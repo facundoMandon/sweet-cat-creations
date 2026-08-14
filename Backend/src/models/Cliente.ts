@@ -3,25 +3,25 @@ import {
   DataTypes,
   InferAttributes,
   InferCreationAttributes,
+  CreationOptional,
 } from "sequelize";
 import { sequelize } from "../config/database.js";
 
+/**
+ * Perfil de compra. La identidad (nombre, email, contraseña, rol) vive en
+ * `usuarios`; acá sólo quedan los datos necesarios para entregar un pedido.
+ */
 export class Cliente extends Model<
   InferAttributes<Cliente>,
   InferCreationAttributes<Cliente>
 > {
-  declare ClienteID: number;
-  declare ClienteNombre: string;
+  declare ClienteID: CreationOptional<number>;
+  declare UsuarioID: number;
   declare ClienteTelefono: string;
   declare ClienteDireccion: string;
-  declare Rol: "cliente" | "admin" ;
-  declare ClienteContraseniaHash: string;
-  /** Email del usuario asociado (permite resolver la propiedad del recurso). */
-  declare ClienteEmail: string | null;
 
-
-  declare readonly createdAt: Date;
-  declare readonly updatedAt: Date;
+  declare readonly createdAt: CreationOptional<Date>;
+  declare readonly updatedAt: CreationOptional<Date>;
 }
 
 Cliente.init(
@@ -32,46 +32,33 @@ Cliente.init(
       primaryKey: true,
     },
 
-    ClienteNombre: {
-      type: DataTypes.STRING(150),
+    UsuarioID: {
+      type: DataTypes.INTEGER,
       allowNull: false,
+      unique: true,
     },
 
     ClienteTelefono: {
       type: DataTypes.STRING(50),
       allowNull: false,
+      defaultValue: "",
     },
 
     ClienteDireccion: {
       type: DataTypes.STRING(250),
       allowNull: false,
+      defaultValue: "",
     },
 
-    ClienteEmail: {
-      type: DataTypes.STRING(150),
-      allowNull: false,
-    },
-
-    ClienteContraseniaHash: {
-      type: DataTypes.STRING(256),
-      allowNull: false, // Obligatorio para poder hacer login
-    },
-
-
-    Rol: {
-      type: DataTypes.ENUM("cliente", "admin"),
-      allowNull: false,
-      defaultValue: "cliente",
-    },
     createdAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
     updatedAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
@@ -79,4 +66,4 @@ Cliente.init(
     tableName: "clientes",
     timestamps: true,
   }
-); 
+);

@@ -46,7 +46,7 @@ const SORTS: Record<string, string | string[]> = {
 };
 
 const includes = () => [
-  { model: Cliente, as: "cliente" },
+  { model: Cliente, as: "cliente", include: [{ model: Usuario, as: "usuario" }] },
   { model: PedidoEstado, as: "estado" },
   {
     model: ProductoPedido,
@@ -229,7 +229,9 @@ export async function listPedidos(
 export async function getPedido(id: number, user: AuthUser | undefined) {
   const pedido = await Pedido.findByPk(id, { include: includes() });
   if (!pedido) throw notFound("Pedido no encontrado");
-  const cliente = await Cliente.findByPk(pedido.ClienteID);
+  const cliente = await Cliente.findByPk(pedido.ClienteID, {
+    include: [{ model: Usuario, as: "usuario" }],
+  });
   if (cliente) assertOwnership(user, cliente);
   return toJSON(pedido);
 }

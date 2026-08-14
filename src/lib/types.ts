@@ -110,6 +110,7 @@ export interface Cliente {
   ClienteID: number
   UsuarioID?: number | null | undefined
   ClienteNombre: string
+  ClienteApellido?: string | null | undefined
   ClienteEmail?: string | null | undefined
   ClienteTelefono: string
   ClienteDireccion: string

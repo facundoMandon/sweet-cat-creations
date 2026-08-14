@@ -4,6 +4,10 @@ import type { Cliente, Notificacion } from '../types'
 
 export interface ClienteInput {
   ClienteNombre: string
+  ClienteApellido?: string
+  /** Sólo en el alta: identidad del usuario asociado. */
+  ClienteEmail?: string
+  password?: string
   ClienteTelefono: string
   ClienteDireccion: string
 }

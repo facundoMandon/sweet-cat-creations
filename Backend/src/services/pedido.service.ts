@@ -32,7 +32,11 @@ import {
 } from "../utils/estados.js";
 import * as notificacionService from "./notificacion.service.js";
 import * as calendarService from "./calendar.service.js";
-import { assertOwnership, type AuthUser } from "./cliente.service.js";
+import {
+  assertOwnership,
+  clienteDeUsuario,
+  type AuthUser,
+} from "./cliente.service.js";
 
 const SORTS: Record<string, string | string[]> = {
   fecha: "PedidoFechaEntrega",
@@ -101,12 +105,7 @@ async function resolverCliente(
   let cliente: Cliente | null = null;
 
   if (user && user.rol !== "admin") {
-    if (user.clienteId) cliente = await Cliente.findByPk(user.clienteId);
-    if (!cliente) {
-      cliente = await Cliente.findOne({
-        where: { ClienteEmail: user.email.toLowerCase() },
-      });
-    }
+    cliente = await clienteDeUsuario(user);
     if (!cliente) {
       throw forbidden("Tu usuario no tiene un cliente asociado");
     }
@@ -207,9 +206,7 @@ export async function listPedidos(
   if (hasta) and.push({ PedidoFechaEntrega: { [Op.lte]: new Date(`${hasta}T23:59:59Z`) } });
 
   if (user && user.rol !== "admin") {
-    const propio = user.clienteId
-      ? await Cliente.findByPk(user.clienteId)
-      : await Cliente.findOne({ where: { ClienteEmail: user.email.toLowerCase() } });
+    const propio = await clienteDeUsuario(user);
     if (!propio) return paginated([], 0, page);
     and.push({ ClienteID: propio.ClienteID });
   } else {

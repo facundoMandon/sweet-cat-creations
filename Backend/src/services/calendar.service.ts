@@ -1,3 +1,4 @@
+import { nombreCliente, emailCliente } from "./cliente.service.js";
 import type { Cliente, Pedido } from "../models/index.js";
 
 /**
@@ -56,7 +57,7 @@ export async function syncRecordatorios(
   try {
     const eventos = buildRecordatorios(
       pedido,
-      cliente?.ClienteNombre ?? `Cliente ${pedido.ClienteID}`
+      nombreCliente(cliente) ?? `Cliente ${pedido.ClienteID}`
     );
     for (const ev of eventos) {
       console.log("[calendar] upsert", VENDEDOR_CALENDAR_ID, ev.key, ev.fecha);

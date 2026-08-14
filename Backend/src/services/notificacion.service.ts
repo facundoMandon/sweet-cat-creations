@@ -23,7 +23,7 @@ async function enviar(
   cliente: Cliente | null,
   asunto: string
 ): Promise<boolean> {
-  const destino = cliente?.ClienteEmail ?? null;
+  const destino = emailCliente(cliente);
   if (!destino) {
     console.warn("[notificacion] pedido sin email de destino", pedido.PedidoID);
     return false;
@@ -80,7 +80,7 @@ export async function notificarCancelacionPorCliente(
 ): Promise<void> {
   console.log(
     "[notificacion] Aviso al administrador: el pedido fue cancelado por el cliente",
-    { pedidoId: pedido.PedidoID, cliente: cliente?.ClienteNombre ?? pedido.ClienteID }
+    { pedidoId: pedido.PedidoID, cliente: nombreCliente(cliente) ?? pedido.ClienteID }
   );
   await registrarNotificacion(
     pedido,

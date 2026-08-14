@@ -1,4 +1,4 @@
-import { api, USE_MOCK } from '../api-client'
+import { api, USE_MOCK, unwrap, unwrapList } from '../api-client'
 import { db, delay, nextId, enrichPedido } from '../mock-db'
 import type { Pedido, PedidoEstado, CartItem } from '../types'
 
@@ -11,8 +11,8 @@ export interface CheckoutInput {
 export const orderService = {
   async list(): Promise<Pedido[]> {
     if (USE_MOCK) return delay(db.pedidos.map(enrichPedido))
-    const { data } = await api.get('/pedidos')
-    return data
+    const { data } = await api.get('/pedidos', { params: { pageSize: 200 } })
+    return unwrapList<Pedido>(data)
   },
 
   async listByCliente(clienteId: number): Promise<Pedido[]> {
@@ -24,8 +24,10 @@ export const orderService = {
           .sort((a, b) => (a.createdAt! < b.createdAt! ? 1 : -1)),
       )
     }
-    const { data } = await api.get(`/pedidos?ClienteID=${clienteId}`)
-    return data
+    const { data } = await api.get('/pedidos', {
+      params: { clienteId, pageSize: 200 },
+    })
+    return unwrapList<Pedido>(data)
   },
 
   async get(id: number): Promise<Pedido> {
@@ -35,7 +37,7 @@ export const orderService = {
       return delay(enrichPedido(p))
     }
     const { data } = await api.get(`/pedidos/${id}`)
-    return data
+    return unwrap<Pedido>(data)
   },
 
   // Crea el Pedido + sus ProductoPedido (renglones)
@@ -75,25 +77,18 @@ export const orderService = {
       })
       return delay(enrichPedido(pedido))
     }
-    // Backend real: crear pedido y luego renglones
-    const { data: pedido } = await api.post('/pedidos', {
+    // Backend real: el pedido se crea con sus renglones en una sola llamada.
+    // El total y los precios los recalcula el servidor desde la base.
+    const { data } = await api.post('/pedidos', {
       ClienteID: input.ClienteID,
       PedidoFechaEntrega: input.PedidoFechaEntrega,
-      PedidoEstadoID: 1,
-      PedidoMontoTotal: total,
+      renglones: input.items.map((it) => ({
+        ProdID: it.producto.ProdID,
+        Cantidad: it.cantidad,
+        TextoPersonalizado: it.textoPersonalizado ?? null,
+      })),
     })
-    await Promise.all(
-      input.items.map((it) =>
-        api.post('/producto-pedidos', {
-          PedidoID: pedido.PedidoID,
-          ProdID: it.producto.ProdID,
-          Cantidad: it.cantidad,
-          ProdPrecioUnitario: it.producto.ProdPrecio,
-          TextoPersonalizado: it.textoPersonalizado,
-        }),
-      ),
-    )
-    return pedido
+    return unwrap<Pedido>(data)
   },
 
   async updateEstado(id: number, PedidoEstadoID: number): Promise<Pedido> {
@@ -106,8 +101,8 @@ export const orderService = {
       }
       return delay(enrichPedido(db.pedidos[idx]!))
     }
-    const { data } = await api.put(`/pedidos/${id}`, { PedidoEstadoID })
-    return data
+    const { data } = await api.patch(`/pedidos/${id}/status`, { PedidoEstadoID })
+    return unwrap<Pedido>(data)
   },
 
   async remove(id: number): Promise<void> {
@@ -123,8 +118,8 @@ export const orderService = {
 export const pedidoEstadoService = {
   async list(): Promise<PedidoEstado[]> {
     if (USE_MOCK) return delay(db.pedidoEstados)
-    const { data } = await api.get('/pedido-estados')
-    return data
+    const { data } = await api.get('/estados/pedidos')
+    return unwrapList<PedidoEstado>(data)
   },
   async create(input: {
     PedidoEstadoDescripcion: string
@@ -137,8 +132,7 @@ export const pedidoEstadoService = {
       db.pedidoEstados.push(nuevo)
       return delay(nuevo)
     }
-    const { data } = await api.post('/pedido-estados', input)
-    return data
+    throw new Error('Los estados de pedido son fijos y no se pueden crear')
   },
   async update(
     id: number,
@@ -149,14 +143,13 @@ export const pedidoEstadoService = {
       db.pedidoEstados[idx] = { ...db.pedidoEstados[idx]!, ...input }
       return delay(db.pedidoEstados[idx]!)
     }
-    const { data } = await api.put(`/pedido-estados/${id}`, input)
-    return data
+    throw new Error('Los estados de pedido son fijos y no se pueden editar')
   },
   async remove(id: number): Promise<void> {
     if (USE_MOCK) {
       db.pedidoEstados = db.pedidoEstados.filter((x) => x.PedidoEstadoID !== id)
       return delay(undefined)
     }
-    await api.delete(`/pedido-estados/${id}`)
+    throw new Error('Los estados de pedido son fijos y no se pueden eliminar')
   },
 }

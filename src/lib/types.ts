@@ -89,29 +89,35 @@ export interface Notificacion {
 }
 
 // --- Auth ---
-export type Rol = 'admin' | 'cliente'
+/** `visitante` = sin sesión: puede navegar pero no comprar. */
+export type Rol = 'admin' | 'cliente' | 'visitante'
 
 export interface Usuario {
   id: string | number
   nombre: string
+  apellido?: string | null | undefined
   email: string
   rol: Rol
+  activo?: boolean | undefined
   telefono?: string | null | undefined
   direccion?: string | null | undefined
   clienteId?: number | null | undefined
 }
 
 
+/** Perfil de compra asociado a un Usuario (1:1). */
 export interface Cliente {
   ClienteID: number
+  UsuarioID?: number | null | undefined
   ClienteNombre: string
-  ClienteEmail: string | null
+  ClienteEmail?: string | null | undefined
   ClienteTelefono: string
   ClienteDireccion: string
-  Rol: Rol
+  Rol?: Rol | undefined
   createdAt?: string | undefined
   updatedAt?: string | undefined
 }
+
 
 
 // --- Carrito ---

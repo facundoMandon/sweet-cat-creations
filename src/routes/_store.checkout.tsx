@@ -65,7 +65,7 @@ function CheckoutPage() {
   const confirmar = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!nombre.trim() || !telefono.trim() || !direccion.trim() || !fecha) {
+    if (!nombre.trim() || !telefono.trim() || !direccionEnvio.trim() || !fecha) {
       setError("Completá todos los campos para continuar.");
       return;
     }
@@ -76,14 +76,15 @@ function CheckoutPage() {
         const cliente = await clientService.create({
           ClienteNombre: nombre,
           ClienteTelefono: telefono,
-          ClienteDireccion: direccion,
+          ClienteDireccion: direccionEnvio,
         });
         clienteId = cliente.ClienteID;
       } else {
+        // Si eligió enviar a otra dirección, no se pisa la del perfil.
         await clientService.update(clienteId, {
           ClienteNombre: nombre,
           ClienteTelefono: telefono,
-          ClienteDireccion: direccion,
+          ClienteDireccion: direccionGuardada || direccionEnvio,
         });
       }
       const pedido = await orderService.checkout({
@@ -104,7 +105,7 @@ function CheckoutPage() {
       const mensaje = buildOrderMessage({
         pedidoId: pedido.PedidoID,
         cliente: nombre.trim(),
-        direccion: direccion.trim(),
+        direccion: direccionEnvio.trim(),
         fechaEntrega: fecha,
         items,
         total,

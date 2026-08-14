@@ -187,6 +187,7 @@ export {
   Producto,
   ProductoCombo,
   ProdEvento,
+  Usuario,
   Cliente,
   PedidoEstado,
   Pedido,

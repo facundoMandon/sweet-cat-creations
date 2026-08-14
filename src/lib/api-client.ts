@@ -25,7 +25,25 @@ export function setToken(token: string | null) {
 export const api = axios.create({
   baseURL: API_URL ? `${API_URL}/api` : "/api",
   headers: { "Content-Type": "application/json" },
+  // Render (plan free) puede tardar ~50s en despertar tras inactividad.
+  timeout: 60000,
+  withCredentials: true,
 });
+
+/** La API responde `{ success, data, meta }`; esto devuelve sólo `data`. */
+export function unwrap<T>(payload: unknown): T {
+  if (payload && typeof payload === "object" && "data" in payload) {
+    return (payload as { data: T }).data;
+  }
+  return payload as T;
+}
+
+/** Igual que `unwrap`, pero garantiza un array. */
+export function unwrapList<T>(payload: unknown): T[] {
+  const data = unwrap<T[] | undefined>(payload);
+  return Array.isArray(data) ? data : [];
+}
+
 
 // Interceptor de request: inyecta el JWT en cada llamada
 api.interceptors.request.use((config) => {

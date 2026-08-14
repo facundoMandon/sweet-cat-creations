@@ -1,4 +1,4 @@
-import { nombreCliente, emailCliente } from "./cliente.service.js";
+import { nombreCliente } from "./cliente.service.js";
 import type { Cliente, Pedido } from "../models/index.js";
 
 /**

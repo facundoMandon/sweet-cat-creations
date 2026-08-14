@@ -1,4 +1,5 @@
 import { Notificacion, Pedido, Cliente } from "../models/index.js";
+import { nombreCliente, emailCliente } from "./cliente.service.js";
 import { notFound } from "../utils/AppError.js";
 import { toJSON } from "../utils/serialize.js";
 import {

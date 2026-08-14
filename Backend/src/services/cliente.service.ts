@@ -45,6 +45,20 @@ export function publicCliente(cliente: Cliente) {
   };
 }
 
+/** Nombre completo del cliente (vive en el usuario asociado). */
+export function nombreCliente(cliente: Cliente | null | undefined): string | null {
+  if (!cliente) return null;
+  const usuario = (cliente as unknown as { usuario?: Usuario }).usuario;
+  if (!usuario) return null;
+  return [usuario.UsuarioNombre, usuario.UsuarioApellido].filter(Boolean).join(" ");
+}
+
+/** Email de contacto del cliente (vive en el usuario asociado). */
+export function emailCliente(cliente: Cliente | null | undefined): string | null {
+  if (!cliente) return null;
+  return (cliente as unknown as { usuario?: Usuario }).usuario?.UsuarioEmail ?? null;
+}
+
 /** Un cliente sólo puede operar sobre su propio perfil; el admin sobre todos. */
 export function assertOwnership(user: AuthUser | undefined, cliente: Cliente): void {
   if (!user || user.rol === "visitante") throw forbidden();

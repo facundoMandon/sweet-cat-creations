@@ -110,12 +110,16 @@ export async function createUsuario(
       ? parseRol(body["rol"])
       : "cliente";
 
-  const telefono = optionalString(body["telefono"] ?? body["ClienteTelefono"], "telefono", 50);
-  const direccion = optionalString(
-    body["direccion"] ?? body["ClienteDireccion"],
-    "direccion",
-    250
-  );
+  // Para el rol cliente, teléfono y dirección son obligatorios: se necesitan
+  // para poder entregar el pedido.
+  const telefono =
+    rol === "cliente"
+      ? requiredString(body["telefono"] ?? body["ClienteTelefono"], "telefono", 50)
+      : optionalString(body["telefono"] ?? body["ClienteTelefono"], "telefono", 50);
+  const direccion =
+    rol === "cliente"
+      ? requiredString(body["direccion"] ?? body["ClienteDireccion"], "direccion", 250)
+      : optionalString(body["direccion"] ?? body["ClienteDireccion"], "direccion", 250);
 
   if (await findByEmail(email)) {
     throw conflict("Ya existe un usuario con ese email");

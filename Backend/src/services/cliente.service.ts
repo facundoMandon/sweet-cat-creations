@@ -36,6 +36,7 @@ export function publicCliente(cliente: Cliente) {
     ClienteNombre: usuario
       ? [usuario.UsuarioNombre, usuario.UsuarioApellido].filter(Boolean).join(" ")
       : "",
+    ClienteApellido: usuario?.UsuarioApellido ?? null,
     ClienteEmail: usuario?.UsuarioEmail ?? null,
     ClienteTelefono: cliente.ClienteTelefono,
     ClienteDireccion: cliente.ClienteDireccion,
@@ -143,7 +144,13 @@ export async function createCliente(body: Record<string, unknown>) {
     150
   );
   const usuario = await createUsuario(
-    { ...body, nombre, rol: "cliente" },
+    {
+      ...body,
+      nombre,
+      apellido: body["apellido"] ?? body["ClienteApellido"],
+      email: body["email"] ?? body["ClienteEmail"],
+      rol: "cliente",
+    },
     { forzarRolCliente: true }
   );
   const cliente = await Cliente.findOne({
@@ -179,15 +186,20 @@ export async function updateCliente(
   }
   await cliente.update(data);
 
-  // Nombre/email viven en el usuario asociado.
+  // Nombre/apellido/email viven en el usuario asociado (el email es de sólo
+  // lectura desde acá: cambiar el email de acceso es otra operación).
   const usuario = (cliente as unknown as { usuario?: Usuario }).usuario;
   if (usuario) {
+    const identidad: Record<string, unknown> = {};
     const nombre = body["ClienteNombre"] ?? body["nombre"];
     if (nombre !== undefined) {
-      await usuario.update({
-        UsuarioNombre: requiredString(nombre, "ClienteNombre", 150),
-      });
+      identidad["UsuarioNombre"] = requiredString(nombre, "ClienteNombre", 150);
     }
+    const apellido = body["ClienteApellido"] ?? body["apellido"];
+    if (apellido !== undefined) {
+      identidad["UsuarioApellido"] = optionalString(apellido, "apellido", 150);
+    }
+    if (Object.keys(identidad).length > 0) await usuario.update(identidad);
   }
 
   return toJSON(publicCliente(await getClienteEntity(id)));

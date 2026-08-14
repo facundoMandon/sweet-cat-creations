@@ -42,20 +42,51 @@ function LoginPage() {
 
   const [modo, setModo] = React.useState<"login" | "registro">("login");
   const [nombre, setNombre] = React.useState("");
+  const [apellido, setApellido] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [telefono, setTelefono] = React.useState("");
+  const [direccion, setDireccion] = React.useState("");
   const [error, setError] = React.useState("");
   const [cargando, setCargando] = React.useState(false);
+
+  const validarRegistro = (): string | null => {
+    if (!nombre.trim()) return "Ingresá tu nombre";
+    if (!apellido.trim() || apellido.trim().length > 50)
+      return "Ingresá tu apellido (máx. 50 caracteres)";
+    if (!telefono.trim()) return "Ingresá tu teléfono";
+    if (!/^[\d\s+()-]{6,50}$/.test(telefono.trim()))
+      return "El teléfono sólo puede tener números, espacios, + y -";
+    if (!direccion.trim()) return "Ingresá tu dirección";
+    if (direccion.trim().length > 250)
+      return "La dirección no puede superar los 250 caracteres";
+    if (password.length < 6) return "La contraseña debe tener al menos 6 caracteres";
+    return null;
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (modo === "registro") {
+      const invalido = validarRegistro();
+      if (invalido) {
+        setError(invalido);
+        return;
+      }
+    }
     setCargando(true);
     try {
       const usuario =
         modo === "login"
           ? await login(email, password)
-          : await register({ nombre, email, password });
+          : await register({
+              nombre: nombre.trim(),
+              apellido: apellido.trim(),
+              email: email.trim(),
+              password,
+              telefono: telefono.trim(),
+              direccion: direccion.trim(),
+            });
       toast(`¡Hola, ${usuario.nombre}!`);
       if (usuario.rol === "admin") navigate({ to: "/admin" });
       else if (next === "/pedidos") navigate({ to: "/pedidos" });
@@ -113,14 +144,25 @@ function LoginPage() {
 
             <form onSubmit={submit} className="flex flex-col gap-4">
               {modo === "registro" ? (
-                <Field label="Nombre" htmlFor="nombre">
-                  <Input
-                    id="nombre"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    placeholder="Sofía Pérez"
-                  />
-                </Field>
+                <>
+                  <Field label="Nombre" htmlFor="nombre">
+                    <Input
+                      id="nombre"
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                      placeholder="Sofía"
+                    />
+                  </Field>
+                  <Field label="Apellido" htmlFor="apellido">
+                    <Input
+                      id="apellido"
+                      value={apellido}
+                      maxLength={50}
+                      onChange={(e) => setApellido(e.target.value)}
+                      placeholder="Pérez"
+                    />
+                  </Field>
+                </>
               ) : null}
               <Field label="Correo" htmlFor="email">
                 <Input
@@ -140,6 +182,34 @@ function LoginPage() {
                   placeholder="••••••••"
                 />
               </Field>
+              {modo === "registro" ? (
+                <>
+                  <Field label="Teléfono" htmlFor="telefono">
+                    <Input
+                      id="telefono"
+                      type="tel"
+                      value={telefono}
+                      maxLength={50}
+                      onChange={(e) => setTelefono(e.target.value)}
+                      placeholder="11 5555 5555"
+                    />
+                  </Field>
+                  <Field
+                    label="Dirección"
+                    htmlFor="direccion"
+                    hint="La usamos como dirección de envío por defecto; podés cambiarla en cada pedido."
+                  >
+                    <Input
+                      id="direccion"
+                      value={direccion}
+                      maxLength={250}
+                      onChange={(e) => setDireccion(e.target.value)}
+                      placeholder="Av. Siempreviva 742"
+                    />
+                  </Field>
+                </>
+              ) : null}
+
 
               {error ? (
                 <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive">

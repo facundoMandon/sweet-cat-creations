@@ -11,7 +11,7 @@ export const VENDEDOR_CALENDAR_ID = "facundo-mandon@hotmail.com";
 
 /** URL base del sistema para los enlaces al detalle del pedido. */
 export const APP_BASE_URL =
-  process.env["APP_BASE_URL"] ?? "https://sweet-cat-creations.lovable.app";
+  process.env["APP_BASE_URL"] ?? "https://blackcats.lovable.app";
 
 /** Días de anticipación de cada recordatorio. */
 export const RECORDATORIO_DIAS = [7, 1] as const;

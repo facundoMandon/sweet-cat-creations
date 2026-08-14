@@ -139,7 +139,8 @@ async function seedCatalogo(): Promise<void> {
   }
 }
 
-async function main(): Promise<void> {
+/** Ejecuta el seed completo. Reutilizable desde el script y desde la API. */
+export async function runSeed(): Promise<{ admin: string; cliente: string }> {
   await sequelize.authenticate();
   await sequelize.sync({ alter: true });
   await ensureEstados();
@@ -165,11 +166,17 @@ async function main(): Promise<void> {
   await seedCatalogo();
 
   console.log("Seed completado");
-  await sequelize.close();
+  return { admin: ADMIN.email, cliente: CLIENTE.email };
 }
 
-main().catch(async (err) => {
-  console.error("Error en el seed:", err);
-  await sequelize.close().catch(() => undefined);
-  process.exit(1);
-});
+// Ejecución directa: `npm run seed`
+const ejecutadoDirecto = process.argv[1]?.includes("seed");
+if (ejecutadoDirecto) {
+  runSeed()
+    .then(() => sequelize.close())
+    .catch(async (err) => {
+      console.error("Error en el seed:", err);
+      await sequelize.close().catch(() => undefined);
+      process.exit(1);
+    });
+}

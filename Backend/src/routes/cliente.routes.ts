@@ -3,13 +3,13 @@ import * as clienteCtrl from '../controllers/cliente.controller.js';
 import { authMiddleware } from '../middlewares/auth.middleware.js';
 import { requireAdmin } from '../middlewares/role.middleware.js';
 
-const requireAuth = authMiddleware;
 const router = Router();
 
-router.post('/', clienteCtrl.createCliente);
-router.get('/', requireAuth, clienteCtrl.listClientes);
-router.get('/:id', requireAuth, clienteCtrl.getCliente);
-router.patch('/:id', requireAuth, clienteCtrl.updateCliente);
-router.delete('/:id', requireAuth, requireAdmin, clienteCtrl.deleteCliente);
+// El alta pública de clientes se hace por /api/auth/register.
+router.post('/', authMiddleware, requireAdmin, clienteCtrl.createCliente);
+router.get('/', authMiddleware, requireAdmin, clienteCtrl.listClientes);
+router.get('/:id', authMiddleware, clienteCtrl.getCliente);
+router.patch('/:id', authMiddleware, clienteCtrl.updateCliente);
+router.delete('/:id', authMiddleware, requireAdmin, clienteCtrl.deleteCliente);
 
 export default router;

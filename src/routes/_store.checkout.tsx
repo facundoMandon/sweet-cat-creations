@@ -43,16 +43,23 @@ function CheckoutPage() {
   const syncCalendar = useServerFn(syncPedidoRecordatorios);
 
   const [nombre, setNombre] = React.useState(usuario?.nombre ?? "");
-  const [telefono, setTelefono] = React.useState("");
+  const [telefono, setTelefono] = React.useState(usuario?.telefono ?? "");
   const [direccion, setDireccion] = React.useState("");
+  const [usarGuardada, setUsarGuardada] = React.useState(true);
   const [fecha, setFecha] = React.useState("");
   const [enviando, setEnviando] = React.useState(false);
   const [pedidoId, setPedidoId] = React.useState<number | null>(null);
   const [waLink, setWaLink] = React.useState<string>("");
   const [error, setError] = React.useState("");
 
+  const direccionGuardada = usuario?.direccion?.trim() ?? "";
+  const direccionEnvio = usarGuardada && direccionGuardada
+    ? direccionGuardada
+    : direccion;
+
   React.useEffect(() => {
     if (usuario?.nombre) setNombre((n) => n || usuario.nombre);
+    if (usuario?.telefono) setTelefono((t) => t || usuario.telefono || "");
   }, [usuario]);
 
   const confirmar = async (e: React.FormEvent) => {

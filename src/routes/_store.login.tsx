@@ -144,14 +144,25 @@ function LoginPage() {
 
             <form onSubmit={submit} className="flex flex-col gap-4">
               {modo === "registro" ? (
-                <Field label="Nombre" htmlFor="nombre">
-                  <Input
-                    id="nombre"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    placeholder="Sofía Pérez"
-                  />
-                </Field>
+                <>
+                  <Field label="Nombre" htmlFor="nombre">
+                    <Input
+                      id="nombre"
+                      value={nombre}
+                      onChange={(e) => setNombre(e.target.value)}
+                      placeholder="Sofía"
+                    />
+                  </Field>
+                  <Field label="Apellido" htmlFor="apellido">
+                    <Input
+                      id="apellido"
+                      value={apellido}
+                      maxLength={50}
+                      onChange={(e) => setApellido(e.target.value)}
+                      placeholder="Pérez"
+                    />
+                  </Field>
+                </>
               ) : null}
               <Field label="Correo" htmlFor="email">
                 <Input

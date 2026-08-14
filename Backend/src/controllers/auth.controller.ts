@@ -5,19 +5,26 @@ import { unauthorized } from "../utils/AppError.js";
 import { REFRESH_TTL_SECONDS } from "../utils/jwt.js";
 
 const REFRESH_COOKIE = "blackcats_refresh";
+// El frontend vive en otro dominio (lovable.app) y la API en Render:
+// la cookie de refresh debe ser cross-site (SameSite=None; Secure).
+const CROSS_SITE = process.env["NODE_ENV"] === "production";
+
+const cookieOptions = {
+  httpOnly: true,
+  sameSite: (CROSS_SITE ? "none" : "lax") as "none" | "lax",
+  secure: CROSS_SITE,
+  path: "/",
+};
 
 function setRefreshCookie(res: Response, token: string): void {
   res.cookie?.(REFRESH_COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env["NODE_ENV"] === "production",
+    ...cookieOptions,
     maxAge: REFRESH_TTL_SECONDS * 1000,
-    path: "/",
   });
 }
 
 function clearRefreshCookie(res: Response): void {
-  res.clearCookie?.(REFRESH_COOKIE, { path: "/" });
+  res.clearCookie?.(REFRESH_COOKIE, cookieOptions);
 }
 
 /** Lee la cookie de refresh sin depender de cookie-parser. */

@@ -204,14 +204,56 @@ function CheckoutPage() {
                 placeholder="11 5555 5555"
               />
             </Field>
-            <Field label="Dirección" htmlFor="dir">
-              <Input
-                id="dir"
-                value={direccion}
-                onChange={(e) => setDireccion(e.target.value)}
-                placeholder="Av. Siempreviva 742"
-              />
-            </Field>
+            {direccionGuardada ? (
+              <div className="flex flex-col gap-3">
+                <p className="font-display text-sm font-bold">Dirección de envío</p>
+                <label className="flex cursor-pointer items-start gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="dirModo"
+                    className="mt-1"
+                    checked={usarGuardada}
+                    onChange={() => setUsarGuardada(true)}
+                  />
+                  <span>
+                    Usar mi dirección guardada
+                    <span className="block text-muted-foreground">
+                      {direccionGuardada}
+                    </span>
+                  </span>
+                </label>
+                <label className="flex cursor-pointer items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="dirModo"
+                    checked={!usarGuardada}
+                    onChange={() => setUsarGuardada(false)}
+                  />
+                  <span>Enviar a otra dirección</span>
+                </label>
+                {!usarGuardada ? (
+                  <Field label="Otra dirección" htmlFor="dir">
+                    <Input
+                      id="dir"
+                      value={direccion}
+                      maxLength={250}
+                      onChange={(e) => setDireccion(e.target.value)}
+                      placeholder="Av. Siempreviva 742"
+                    />
+                  </Field>
+                ) : null}
+              </div>
+            ) : (
+              <Field label="Dirección" htmlFor="dir">
+                <Input
+                  id="dir"
+                  value={direccion}
+                  maxLength={250}
+                  onChange={(e) => setDireccion(e.target.value)}
+                  placeholder="Av. Siempreviva 742"
+                />
+              </Field>
+            )}
             <Field
               label="Fecha de entrega"
               htmlFor="fecha"

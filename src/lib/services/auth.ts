@@ -10,12 +10,12 @@ export interface AuthResult {
 }
 
 /**
- * Cliente dedicado a la autenticación propia (JWT emitido por este mismo
- * proyecto en /api/public/auth/*). `withCredentials` permite que viaje la
- * cookie httpOnly con el refresh token.
+ * Cliente dedicado a la autenticación contra la API Express externa
+ * (VITE_API_URL, ej: https://api-blackcats.onrender.com) en /api/auth/*.
+ * `withCredentials` permite que viaje la cookie httpOnly con el refresh token.
  */
 const authApi = axios.create({
-  baseURL: API_URL ? `${API_URL}/api/public/auth` : '/api/public/auth',
+  baseURL: `${API_URL}/api/auth`,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true,
 })
@@ -64,10 +64,11 @@ export const authService = {
   async me(): Promise<Usuario> {
     const token = getToken()
     if (!token) throw new Error('No hay sesión activa')
-    const { data } = await authApi.get<Usuario>('/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    return data
+    const { data } = await authApi.get<{ success: boolean; data: Usuario }>(
+      '/me',
+      { headers: { Authorization: `Bearer ${token}` } },
+    )
+    return data.data
   },
 
   /**

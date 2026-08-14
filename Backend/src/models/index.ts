@@ -5,11 +5,28 @@ import { Evento } from "./Evento.js";
 import { Producto } from "./Producto.js";
 import { ProductoCombo } from "./ProductoCombo.js";
 import { ProdEvento } from "./ProdEvento.js";
+import { Usuario } from "./Usuario.js";
 import { Cliente } from "./Cliente.js";
 import { PedidoEstado } from "./PedidoEstado.js";
 import { Pedido } from "./Pedido.js";
 import { ProductoPedido } from "./ProductoPedido.js";
 import { Notificacion } from "./Notificacion.js";
+
+// =========================
+// Usuario - Cliente (1:1)
+// =========================
+
+Usuario.hasOne(Cliente, {
+  foreignKey: "UsuarioID",
+  as: "cliente",
+  onDelete: "CASCADE",
+});
+
+Cliente.belongsTo(Usuario, {
+  foreignKey: "UsuarioID",
+  as: "usuario",
+});
+
 
 // =========================
 // Categoria - SubCategoria
@@ -170,6 +187,7 @@ export {
   Producto,
   ProductoCombo,
   ProdEvento,
+  Usuario,
   Cliente,
   PedidoEstado,
   Pedido,

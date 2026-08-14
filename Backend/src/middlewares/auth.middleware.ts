@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { unauthorized } from "../utils/AppError.js";
-import { verifyAccessToken } from "../utils/jwt.js";
+import { verifyAccessToken, type AccessTokenPayload } from "../utils/jwt.js";
 
 function readToken(req: Request): string | null {
   const header = req.headers.authorization;
@@ -8,6 +8,23 @@ function readToken(req: Request): string | null {
   const token = header.slice(7).trim();
   return token || null;
 }
+
+function toUser(payload: AccessTokenPayload): NonNullable<Request["user"]> {
+  return {
+    id: payload.sub,
+    email: payload.email,
+    rol: payload.rol,
+    clienteId: payload.clienteId,
+    raw: payload,
+  };
+}
+
+/** Usuario anónimo: puede navegar la parte pública, no puede comprar. */
+export const VISITANTE: NonNullable<Request["user"]> = {
+  id: "",
+  email: "",
+  rol: "visitante",
+};
 
 /** Valida el Bearer JWT y publica el usuario en req.user. */
 export function authMiddleware(
@@ -21,17 +38,14 @@ export function authMiddleware(
   const payload = verifyAccessToken(token);
   if (!payload) return next(unauthorized("Token inválido o expirado"));
 
-  req.user = {
-    id: payload.sub,
-    email: payload.email,
-    rol: payload.rol,
-    clienteId: payload.clienteId,
-    raw: payload,
-  };
+  req.user = toUser(payload);
   next();
 }
 
-/** Igual que authMiddleware pero no falla si no hay token (rutas públicas). */
+/**
+ * Igual que authMiddleware pero no falla si no hay token: en ese caso el
+ * request queda con rol "visitante" (sólo lectura de la parte pública).
+ */
 export function optionalAuth(
   req: Request,
   _res: Response,
@@ -41,14 +55,10 @@ export function optionalAuth(
   if (token) {
     const payload = verifyAccessToken(token);
     if (payload) {
-      req.user = {
-        id: payload.sub,
-        email: payload.email,
-        rol: payload.rol,
-        clienteId: payload.clienteId,
-        raw: payload,
-      };
+      req.user = toUser(payload);
+      return next();
     }
   }
+  req.user = { ...VISITANTE };
   next();
 }

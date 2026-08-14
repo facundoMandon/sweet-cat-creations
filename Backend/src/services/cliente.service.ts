@@ -36,6 +36,7 @@ export function publicCliente(cliente: Cliente) {
     ClienteNombre: usuario
       ? [usuario.UsuarioNombre, usuario.UsuarioApellido].filter(Boolean).join(" ")
       : "",
+    ClienteApellido: usuario?.UsuarioApellido ?? null,
     ClienteEmail: usuario?.UsuarioEmail ?? null,
     ClienteTelefono: cliente.ClienteTelefono,
     ClienteDireccion: cliente.ClienteDireccion,
@@ -143,7 +144,13 @@ export async function createCliente(body: Record<string, unknown>) {
     150
   );
   const usuario = await createUsuario(
-    { ...body, nombre, rol: "cliente" },
+    {
+      ...body,
+      nombre,
+      apellido: body["apellido"] ?? body["ClienteApellido"],
+      email: body["email"] ?? body["ClienteEmail"],
+      rol: "cliente",
+    },
     { forzarRolCliente: true }
   );
   const cliente = await Cliente.findOne({

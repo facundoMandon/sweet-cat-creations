@@ -7,6 +7,7 @@ import {
   Producto,
   ProdEstado,
   ProductoPedido,
+  Usuario,
 } from "../models/index.js";
 import { badRequest, conflict, forbidden, notFound } from "../utils/AppError.js";
 import { toJSON } from "../utils/serialize.js";

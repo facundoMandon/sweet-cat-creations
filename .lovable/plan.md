@@ -32,6 +32,9 @@ pedidos  (ClienteID FK)  -> sin cambios
 
 ## Tareas
 
+0. **Arreglar el build actual** (bloqueante): el tipo `Cliente` del frontend ya pide `ClienteEmail` y `Rol`, y `src/lib/mock-data.ts` + `src/lib/services/clients.ts` no los envían. Se resuelve al alinear los tipos con el nuevo modelo Usuario/Cliente del paso 7.
+
+
 1. **Modelos**
    - Nuevo `models/Usuario.ts` (ID, nombre, email único, hash, rol enum `admin|cliente|visitante`, activo, timestamps).
    - Reescribir `models/Cliente.ts`: quita nombre/email/hash/rol, agrega `UsuarioID` único FK.

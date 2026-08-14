@@ -42,20 +42,51 @@ function LoginPage() {
 
   const [modo, setModo] = React.useState<"login" | "registro">("login");
   const [nombre, setNombre] = React.useState("");
+  const [apellido, setApellido] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [telefono, setTelefono] = React.useState("");
+  const [direccion, setDireccion] = React.useState("");
   const [error, setError] = React.useState("");
   const [cargando, setCargando] = React.useState(false);
+
+  const validarRegistro = (): string | null => {
+    if (!nombre.trim()) return "Ingresá tu nombre";
+    if (!apellido.trim() || apellido.trim().length > 50)
+      return "Ingresá tu apellido (máx. 50 caracteres)";
+    if (!telefono.trim()) return "Ingresá tu teléfono";
+    if (!/^[\d\s+()-]{6,50}$/.test(telefono.trim()))
+      return "El teléfono sólo puede tener números, espacios, + y -";
+    if (!direccion.trim()) return "Ingresá tu dirección";
+    if (direccion.trim().length > 250)
+      return "La dirección no puede superar los 250 caracteres";
+    if (password.length < 6) return "La contraseña debe tener al menos 6 caracteres";
+    return null;
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (modo === "registro") {
+      const invalido = validarRegistro();
+      if (invalido) {
+        setError(invalido);
+        return;
+      }
+    }
     setCargando(true);
     try {
       const usuario =
         modo === "login"
           ? await login(email, password)
-          : await register({ nombre, email, password });
+          : await register({
+              nombre: nombre.trim(),
+              apellido: apellido.trim(),
+              email: email.trim(),
+              password,
+              telefono: telefono.trim(),
+              direccion: direccion.trim(),
+            });
       toast(`¡Hola, ${usuario.nombre}!`);
       if (usuario.rol === "admin") navigate({ to: "/admin" });
       else if (next === "/pedidos") navigate({ to: "/pedidos" });

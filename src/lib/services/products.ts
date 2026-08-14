@@ -1,4 +1,4 @@
-import { api, USE_MOCK } from '../api-client'
+import { api, USE_MOCK, unwrap, unwrapList } from '../api-client'
 import { db, delay, nextId, enrichProducto } from '../mock-db'
 import type { Producto } from '../types'
 
@@ -17,8 +17,8 @@ export interface ProductoInput {
 export const productService = {
   async list(): Promise<Producto[]> {
     if (USE_MOCK) return delay(db.productos.map(enrichProducto))
-    const { data } = await api.get('/productos')
-    return data
+    const { data } = await api.get('/productos', { params: { pageSize: 200 } })
+    return unwrapList<Producto>(data)
   },
 
   async get(id: number): Promise<Producto> {
@@ -28,7 +28,7 @@ export const productService = {
       return delay(enrichProducto(p))
     }
     const { data } = await api.get(`/productos/${id}`)
-    return data
+    return unwrap<Producto>(data)
   },
 
   async create(input: ProductoInput): Promise<Producto> {
@@ -51,7 +51,7 @@ export const productService = {
       return delay(enrichProducto(nuevo))
     }
     const { data } = await api.post('/productos', input)
-    return data
+    return unwrap<Producto>(data)
   },
 
   async update(id: number, input: ProductoInput): Promise<Producto> {
@@ -67,8 +67,8 @@ export const productService = {
       syncRelations(id, input)
       return delay(enrichProducto(db.productos[idx]!))
     }
-    const { data } = await api.put(`/productos/${id}`, input)
-    return data
+    const { data } = await api.patch(`/productos/${id}`, input)
+    return unwrap<Producto>(data)
   },
 
   async remove(id: number): Promise<void> {

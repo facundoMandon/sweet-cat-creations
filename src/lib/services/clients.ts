@@ -1,4 +1,4 @@
-import { api, USE_MOCK } from '../api-client'
+import { api, USE_MOCK, unwrap, unwrapList } from '../api-client'
 import { db, delay, nextId } from '../mock-db'
 import type { Cliente, Notificacion } from '../types'
 
@@ -11,8 +11,8 @@ export interface ClienteInput {
 export const clientService = {
   async list(): Promise<Cliente[]> {
     if (USE_MOCK) return delay(db.clientes)
-    const { data } = await api.get('/clientes')
-    return data
+    const { data } = await api.get('/clientes', { params: { pageSize: 200 } })
+    return unwrapList<Cliente>(data)
   },
   async get(id: number): Promise<Cliente> {
     if (USE_MOCK) {
@@ -21,7 +21,7 @@ export const clientService = {
       return delay(c)
     }
     const { data } = await api.get(`/clientes/${id}`)
-    return data
+    return unwrap<Cliente>(data)
   },
   async create(input: ClienteInput): Promise<Cliente> {
     if (USE_MOCK) {
@@ -34,7 +34,7 @@ export const clientService = {
       return delay(nuevo)
     }
     const { data } = await api.post('/clientes', input)
-    return data
+    return unwrap<Cliente>(data)
   },
   async update(id: number, input: ClienteInput): Promise<Cliente> {
     if (USE_MOCK) {
@@ -42,8 +42,8 @@ export const clientService = {
       db.clientes[idx] = { ...db.clientes[idx]!, ...input }
       return delay(db.clientes[idx]!)
     }
-    const { data } = await api.put(`/clientes/${id}`, input)
-    return data
+    const { data } = await api.patch(`/clientes/${id}`, input)
+    return unwrap<Cliente>(data)
   },
   async remove(id: number): Promise<void> {
     if (USE_MOCK) {
@@ -66,7 +66,7 @@ export const notificationService = {
           .sort((a, b) => (a.NotiFecha < b.NotiFecha ? 1 : -1)),
       )
     }
-    const { data } = await api.get('/notificaciones')
-    return data
+    const { data } = await api.get('/notificaciones', { params: { pageSize: 100 } })
+    return unwrapList<Notificacion>(data)
   },
 }

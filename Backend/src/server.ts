@@ -5,6 +5,7 @@ import "dotenv/config";
 import app from "./app.js";
 import { sequelize } from "./config/database.js";
 import "./models/index.js";
+import { ensureEstados } from "./utils/estados.js";
 
 const PORT = process.env.PORT || 3001;
 
@@ -17,6 +18,10 @@ async function start() {
     await sequelize.sync( { alter: true } );
 
     console.log("Tablas sincronizadas");
+
+    await ensureEstados();
+
+    console.log("Estados verificados");
 
     app.listen(PORT, () => {
       console.log(`Backend ejecutándose en ${PORT}`);

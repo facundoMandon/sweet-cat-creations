@@ -43,7 +43,16 @@ function AdminClientes() {
       key: "nombre",
       header: "Cliente",
       render: (c) => (
-        <p className="font-display font-bold">{c.ClienteNombre}</p>
+        <p className="font-display font-bold">
+          {[c.ClienteNombre, c.ClienteApellido].filter(Boolean).join(" ")}
+        </p>
+      ),
+    },
+    {
+      key: "email",
+      header: "Email",
+      render: (c) => (
+        <span className="text-muted-foreground">{c.ClienteEmail ?? "—"}</span>
       ),
     },
     {
@@ -83,7 +92,11 @@ function AdminClientes() {
       columns={columns}
       loading={isLoading}
       getRowId={(c) => c.ClienteID}
-      searchFn={(c, q) => c.ClienteNombre.toLowerCase().includes(q)}
+      searchFn={(c, q) =>
+        [c.ClienteNombre, c.ClienteApellido, c.ClienteEmail, c.ClienteTelefono]
+          .filter(Boolean)
+          .some((v) => String(v).toLowerCase().includes(q))
+      }
       onDelete={async (c) => {
         await clientService.remove(c.ClienteID);
         toast("Cliente eliminado");
@@ -110,21 +123,70 @@ function ClienteForm({
   onSaved: () => void;
 }) {
   const { toast } = useToast();
+  const esAlta = !cliente;
   const [form, setForm] = React.useState<ClienteInput>({
     ClienteNombre: cliente?.ClienteNombre ?? "",
+    ClienteApellido: cliente?.ClienteApellido ?? "",
+    ClienteEmail: cliente?.ClienteEmail ?? "",
+    password: "",
     ClienteTelefono: cliente?.ClienteTelefono ?? "",
     ClienteDireccion: cliente?.ClienteDireccion ?? "",
   });
+  const [error, setError] = React.useState("");
   const [guardando, setGuardando] = React.useState(false);
+
+  const set = (k: keyof ClienteInput) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const validar = (): string | null => {
+    if (!form.ClienteNombre.trim()) return "Ingresá el nombre";
+    if (!form.ClienteApellido?.trim() || form.ClienteApellido.trim().length > 50)
+      return "Ingresá el apellido (máx. 50 caracteres)";
+    if (!form.ClienteTelefono.trim()) return "Ingresá el teléfono";
+    if (!/^[\d\s+()-]{6,50}$/.test(form.ClienteTelefono.trim()))
+      return "El teléfono sólo puede tener números, espacios, + y -";
+    if (!form.ClienteDireccion.trim()) return "Ingresá la dirección";
+    if (form.ClienteDireccion.trim().length > 250)
+      return "La dirección no puede superar los 250 caracteres";
+    if (esAlta) {
+      if (!form.ClienteEmail?.trim()) return "Ingresá el email";
+      if (!(form.password && form.password.length >= 6))
+        return "La contraseña debe tener al menos 6 caracteres";
+    }
+    return null;
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const invalido = validar();
+    if (invalido) {
+      setError(invalido);
+      return;
+    }
+    setError("");
     setGuardando(true);
     try {
-      if (cliente) await clientService.update(cliente.ClienteID, form);
-      else await clientService.create(form);
+      if (cliente) {
+        await clientService.update(cliente.ClienteID, {
+          ClienteNombre: form.ClienteNombre.trim(),
+          ClienteApellido: form.ClienteApellido?.trim() ?? "",
+          ClienteTelefono: form.ClienteTelefono.trim(),
+          ClienteDireccion: form.ClienteDireccion.trim(),
+        });
+      } else {
+        await clientService.create({
+          ClienteNombre: form.ClienteNombre.trim(),
+          ClienteApellido: form.ClienteApellido?.trim() ?? "",
+          ClienteEmail: form.ClienteEmail?.trim() ?? "",
+          password: form.password ?? "",
+          ClienteTelefono: form.ClienteTelefono.trim(),
+          ClienteDireccion: form.ClienteDireccion.trim(),
+        });
+      }
       toast(cliente ? "Cliente actualizado" : "Cliente creado");
       onSaved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No pudimos guardar el cliente");
     } finally {
       setGuardando(false);
     }
@@ -133,30 +195,55 @@ function ClienteForm({
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
       <Field label="Nombre">
+        <Input value={form.ClienteNombre} onChange={set("ClienteNombre")} />
+      </Field>
+      <Field label="Apellido">
         <Input
-          value={form.ClienteNombre}
-          onChange={(e) =>
-            setForm((f) => ({ ...f, ClienteNombre: e.target.value }))
-          }
-          required
+          value={form.ClienteApellido ?? ""}
+          maxLength={50}
+          onChange={set("ClienteApellido")}
         />
       </Field>
+      <Field
+        label="Email"
+        {...(esAlta ? {} : { hint: "El email de acceso no se puede cambiar desde acá." })}
+      >
+        <Input
+          type="email"
+          value={form.ClienteEmail ?? ""}
+          onChange={set("ClienteEmail")}
+          readOnly={!esAlta}
+          disabled={!esAlta}
+        />
+      </Field>
+      {esAlta ? (
+        <Field label="Contraseña" hint="Mínimo 6 caracteres.">
+          <Input
+            type="password"
+            value={form.password ?? ""}
+            onChange={set("password")}
+          />
+        </Field>
+      ) : null}
       <Field label="Teléfono">
         <Input
-          value={form.ClienteTelefono ?? ""}
-          onChange={(e) =>
-            setForm((f) => ({ ...f, ClienteTelefono: e.target.value }))
-          }
+          value={form.ClienteTelefono}
+          maxLength={50}
+          onChange={set("ClienteTelefono")}
         />
       </Field>
       <Field label="Dirección">
         <Input
-          value={form.ClienteDireccion ?? ""}
-          onChange={(e) =>
-            setForm((f) => ({ ...f, ClienteDireccion: e.target.value }))
-          }
+          value={form.ClienteDireccion}
+          maxLength={250}
+          onChange={set("ClienteDireccion")}
         />
       </Field>
+      {error ? (
+        <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive">
+          {error}
+        </p>
+      ) : null}
       <Button type="submit" disabled={guardando}>
         {guardando ? "Guardando..." : cliente ? "Guardar cambios" : "Crear cliente"}
       </Button>

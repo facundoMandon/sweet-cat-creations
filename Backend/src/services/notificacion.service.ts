@@ -1,4 +1,5 @@
 import { Notificacion, Pedido, Cliente } from "../models/index.js";
+import { nombreCliente, emailCliente } from "./cliente.service.js";
 import { notFound } from "../utils/AppError.js";
 import { toJSON } from "../utils/serialize.js";
 import {
@@ -23,7 +24,7 @@ async function enviar(
   cliente: Cliente | null,
   asunto: string
 ): Promise<boolean> {
-  const destino = cliente?.ClienteEmail ?? null;
+  const destino = emailCliente(cliente);
   if (!destino) {
     console.warn("[notificacion] pedido sin email de destino", pedido.PedidoID);
     return false;
@@ -80,7 +81,7 @@ export async function notificarCancelacionPorCliente(
 ): Promise<void> {
   console.log(
     "[notificacion] Aviso al administrador: el pedido fue cancelado por el cliente",
-    { pedidoId: pedido.PedidoID, cliente: cliente?.ClienteNombre ?? pedido.ClienteID }
+    { pedidoId: pedido.PedidoID, cliente: nombreCliente(cliente) ?? pedido.ClienteID }
   );
   await registrarNotificacion(
     pedido,

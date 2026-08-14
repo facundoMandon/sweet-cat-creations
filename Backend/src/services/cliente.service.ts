@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { Cliente, Pedido } from "../models/index.js";
+import { Cliente, Pedido, Usuario } from "../models/index.js";
 import { conflict, forbidden, notFound } from "../utils/AppError.js";
 import { toJSON } from "../utils/serialize.js";
 import {
@@ -8,76 +8,82 @@ import {
   paginated,
   type Paginated,
 } from "../utils/query.js";
-import {
-  optionalString,
-  requiredString,
-} from "../utils/validation.js";
-
-const SORTS: Record<string, string | string[]> = {
-  nombre: "ClienteNombre",
-  fecha: "createdAt",
-  id: "ClienteID",
-  rol: "Rol", // ✏️ 1. Habilitado ordenamiento por Rol
-};
+import { optionalString, requiredString } from "../utils/validation.js";
+import { createUsuario, deleteUsuario } from "./usuario.service.js";
 
 export interface AuthUser {
   id: string;
   email: string;
-  rol: "admin" | "cliente";
+  rol: "admin" | "cliente" | "visitante";
   clienteId?: number | undefined;
 }
 
-/** Un cliente sólo puede operar sobre su propio registro; el admin sobre todos. */
-export function assertOwnership(user: AuthUser | undefined, cliente: Cliente): void {
-  if (!user) throw forbidden();
-  if (user.rol === "admin") return;
+const SORTS: Record<string, string | string[]> = {
+  nombre: "$usuario.UsuarioNombre$",
+  email: "$usuario.UsuarioEmail$",
+  fecha: "createdAt",
+  id: "ClienteID",
+};
 
-  // ✏️ 2. Conversión segura para comparar id numérico contra clienteID
-  const userIdNum = user.clienteId ?? Number(user.id);
-  const mismoId = !isNaN(userIdNum) && userIdNum === cliente.ClienteID;
-  const mismoEmail =
-    !!cliente.ClienteEmail &&
-    cliente.ClienteEmail.toLowerCase() === user.email.toLowerCase();
+const USUARIO_INCLUDE = { model: Usuario, as: "usuario" } as const;
 
-  if (!mismoId && !mismoEmail) throw forbidden("No podés acceder a este cliente");
+/** Aplana el perfil + su usuario para el frontend. */
+export function publicCliente(cliente: Cliente) {
+  const usuario = (cliente as unknown as { usuario?: Usuario }).usuario;
+  return {
+    ClienteID: cliente.ClienteID,
+    UsuarioID: cliente.UsuarioID,
+    ClienteNombre: usuario
+      ? [usuario.UsuarioNombre, usuario.UsuarioApellido].filter(Boolean).join(" ")
+      : "",
+    ClienteEmail: usuario?.UsuarioEmail ?? null,
+    ClienteTelefono: cliente.ClienteTelefono,
+    ClienteDireccion: cliente.ClienteDireccion,
+    Rol: usuario?.Rol ?? "cliente",
+    createdAt: cliente.createdAt,
+    updatedAt: cliente.updatedAt,
+  };
 }
 
-function parseInput(body: Record<string, unknown>, partial = false) {
-  const out: Record<string, unknown> = {};
+/** Nombre completo del cliente (vive en el usuario asociado). */
+export function nombreCliente(cliente: Cliente | null | undefined): string | null {
+  if (!cliente) return null;
+  const usuario = (cliente as unknown as { usuario?: Usuario }).usuario;
+  if (!usuario) return null;
+  return [usuario.UsuarioNombre, usuario.UsuarioApellido].filter(Boolean).join(" ");
+}
 
-  if (!partial || body["ClienteNombre"] !== undefined) {
-    out["ClienteNombre"] = requiredString(body["ClienteNombre"], "ClienteNombre", 150);
-  }
+/** Email de contacto del cliente (vive en el usuario asociado). */
+export function emailCliente(cliente: Cliente | null | undefined): string | null {
+  if (!cliente) return null;
+  return (cliente as unknown as { usuario?: Usuario }).usuario?.UsuarioEmail ?? null;
+}
 
-  // 🔒 Teléfono y Dirección SIGUEN SIENDO OBLIGATORIOS (requiredString)
-  if (!partial || body["ClienteTelefono"] !== undefined) {
-    out["ClienteTelefono"] = requiredString(
-      body["ClienteTelefono"],
-      "ClienteTelefono",
-      50
-    );
-  }
-  if (!partial || body["ClienteDireccion"] !== undefined) {
-    out["ClienteDireccion"] = requiredString(
-      body["ClienteDireccion"],
-      "ClienteDireccion",
-      250
-    );
-  }
+/** Un cliente sólo puede operar sobre su propio perfil; el admin sobre todos. */
+export function assertOwnership(user: AuthUser | undefined, cliente: Cliente): void {
+  if (!user || user.rol === "visitante") throw forbidden();
+  if (user.rol === "admin") return;
 
-  // ✏️ 3. Parseo y sanitización del Rol
-  if (body["Rol"] !== undefined) {
-    const rolInput = requiredString(body["Rol"], "Rol", 50);
-    out["Rol"] = rolInput === "admin" ? "admin" : "cliente";
-  } else if (!partial) {
-    out["Rol"] = "cliente"; // Rol por defecto en creación
+  const mismoPerfil = user.clienteId !== undefined && user.clienteId === cliente.ClienteID;
+  const mismoUsuario = Number(user.id) === cliente.UsuarioID;
+  if (!mismoPerfil && !mismoUsuario) {
+    throw forbidden("No podés acceder a este cliente");
   }
+}
 
-  if (body["ClienteEmail"] !== undefined) {
-    const email = optionalString(body["ClienteEmail"], "ClienteEmail", 150);
-    out["ClienteEmail"] = email ? email.toLowerCase() : null;
+/** Perfil de compra del usuario autenticado (o null si no tiene). */
+export async function clienteDeUsuario(
+  user: AuthUser | undefined
+): Promise<Cliente | null> {
+  if (!user || user.rol === "visitante") return null;
+  if (user.clienteId) {
+    const porId = await Cliente.findByPk(user.clienteId, { include: [USUARIO_INCLUDE] });
+    if (porId) return porId;
   }
-  return out;
+  return Cliente.findOne({
+    where: { UsuarioID: Number(user.id) },
+    include: [USUARIO_INCLUDE],
+  });
 }
 
 export async function listClientes(
@@ -90,25 +96,32 @@ export async function listClientes(
   const where = q
     ? {
         [Op.or]: [
-          { ClienteNombre: { [Op.iLike]: `%${q}%` } },
-          { ClienteEmail: { [Op.iLike]: `%${q}%` } },
           { ClienteTelefono: { [Op.iLike]: `%${q}%` } },
-          { Rol: { [Op.iLike]: `%${q}%` } }, // ✏️ 4. Permite filtrar por Rol en las búsquedas
+          { ClienteDireccion: { [Op.iLike]: `%${q}%` } },
+          { "$usuario.UsuarioNombre$": { [Op.iLike]: `%${q}%` } },
+          { "$usuario.UsuarioEmail$": { [Op.iLike]: `%${q}%` } },
         ],
       }
     : {};
 
   const { rows, count } = await Cliente.findAndCountAll({
-    where,
+    where: where as never,
+    include: [USUARIO_INCLUDE],
     order: [[column as string, dir]],
     limit: page.limit,
     offset: page.offset,
+    distinct: true,
+    subQuery: false,
   });
-  return paginated(toJSON<unknown[]>(rows), count, page);
+  return paginated(
+    rows.map((c) => toJSON(publicCliente(c))),
+    count,
+    page
+  );
 }
 
 export async function getClienteEntity(id: number): Promise<Cliente> {
-  const cliente = await Cliente.findByPk(id);
+  const cliente = await Cliente.findByPk(id, { include: [USUARIO_INCLUDE] });
   if (!cliente) throw notFound("Cliente no encontrado");
   return cliente;
 }
@@ -116,27 +129,29 @@ export async function getClienteEntity(id: number): Promise<Cliente> {
 export async function getCliente(id: number, user: AuthUser | undefined) {
   const cliente = await getClienteEntity(id);
   assertOwnership(user, cliente);
-  return toJSON(cliente);
+  return toJSON(publicCliente(cliente));
 }
 
-// ✏️ 5. Se agregó `user?: AuthUser` para controlar asignación de roles al crear
-export async function createCliente(
-  body: Record<string, unknown>,
-  user?: AuthUser
-) {
-  const data = parseInput(body);
-
-  // Si NO es admin el que crea la cuenta (ej. registro público), se fuerza el rol a "cliente"
-  if (user?.rol !== "admin") {
-    data["Rol"] = "cliente";
-  }
-
-  const email = data["ClienteEmail"] as string | null | undefined;
-  if (email) {
-    const dup = await Cliente.findOne({ where: { ClienteEmail: email } });
-    if (dup) throw conflict("Ya existe un cliente con ese email");
-  }
-  return toJSON(await Cliente.create(data as never));
+/**
+ * Alta de cliente: crea usuario (rol cliente) + perfil. Se usa desde el panel
+ * admin; el registro público pasa por /api/auth/register.
+ */
+export async function createCliente(body: Record<string, unknown>) {
+  const nombre = requiredString(
+    body["nombre"] ?? body["ClienteNombre"],
+    "ClienteNombre",
+    150
+  );
+  const usuario = await createUsuario(
+    { ...body, nombre, rol: "cliente" },
+    { forzarRolCliente: true }
+  );
+  const cliente = await Cliente.findOne({
+    where: { UsuarioID: Number(usuario.id) },
+    include: [USUARIO_INCLUDE],
+  });
+  if (!cliente) throw notFound("No se pudo crear el perfil del cliente");
+  return toJSON(publicCliente(cliente));
 }
 
 export async function updateCliente(
@@ -146,29 +161,41 @@ export async function updateCliente(
 ) {
   const cliente = await getClienteEntity(id);
   assertOwnership(user, cliente);
-  const data = parseInput(body, true);
 
-  // ✏️ 6. Protección: sólo el admin puede modificar email Y asignación de rol
-  if (user?.rol !== "admin") {
-    delete data["ClienteEmail"];
-    delete data["Rol"];
+  const data: Record<string, unknown> = {};
+  if (body["ClienteTelefono"] !== undefined || body["telefono"] !== undefined) {
+    data["ClienteTelefono"] = requiredString(
+      body["ClienteTelefono"] ?? body["telefono"],
+      "ClienteTelefono",
+      50
+    );
   }
-
-  const email = data["ClienteEmail"] as string | null | undefined;
-  if (email) {
-    const dup = await Cliente.findOne({
-      where: { ClienteEmail: email, ClienteID: { [Op.ne]: id } },
-    });
-    if (dup) throw conflict("Ya existe un cliente con ese email");
+  if (body["ClienteDireccion"] !== undefined || body["direccion"] !== undefined) {
+    data["ClienteDireccion"] = requiredString(
+      body["ClienteDireccion"] ?? body["direccion"],
+      "ClienteDireccion",
+      250
+    );
   }
-
   await cliente.update(data);
-  return toJSON(cliente);
+
+  // Nombre/email viven en el usuario asociado.
+  const usuario = (cliente as unknown as { usuario?: Usuario }).usuario;
+  if (usuario) {
+    const nombre = body["ClienteNombre"] ?? body["nombre"];
+    if (nombre !== undefined) {
+      await usuario.update({
+        UsuarioNombre: requiredString(nombre, "ClienteNombre", 150),
+      });
+    }
+  }
+
+  return toJSON(publicCliente(await getClienteEntity(id)));
 }
 
 /**
  * Eliminación: sólo si el cliente no tiene pedidos asociados. De lo contrario
- * se rechaza para no romper el historial.
+ * el usuario se desactiva para no romper el historial.
  */
 export async function deleteCliente(id: number): Promise<void> {
   const cliente = await getClienteEntity(id);
@@ -176,5 +203,5 @@ export async function deleteCliente(id: number): Promise<void> {
   if (pedidos > 0) {
     throw conflict("No se puede eliminar: el cliente tiene pedidos asociados");
   }
-  await cliente.destroy();
+  await deleteUsuario(cliente.UsuarioID);
 }

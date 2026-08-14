@@ -64,10 +64,11 @@ export const authService = {
   async me(): Promise<Usuario> {
     const token = getToken()
     if (!token) throw new Error('No hay sesión activa')
-    const { data } = await authApi.get<Usuario>('/me', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    return data
+    const { data } = await authApi.get<{ success: boolean; data: Usuario }>(
+      '/me',
+      { headers: { Authorization: `Bearer ${token}` } },
+    )
+    return data.data
   },
 
   /**

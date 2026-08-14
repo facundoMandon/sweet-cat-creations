@@ -1,8 +1,7 @@
 import express from "express";
 import cors from 'cors';
 import apiRouter from './routes/index.js';
-import { errorHandler } from './middlewares/errorHandler.js';
-import { notFoundHandler } from './middlewares/notFoundHandler.js';
+import { errorHandler, notFoundHandler } from './middlewares/errorHandler.js';
 
 const app = express();
 
@@ -31,6 +30,11 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Raíz: evita que el servicio parezca caído desde el navegador o el monitor.
+app.get('/', (_req, res) => {
+  res.json({ success: true, service: 'blackcats-api', docs: '/api/health' });
+});
 
 app.use('/api', apiRouter);
 

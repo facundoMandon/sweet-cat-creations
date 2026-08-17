@@ -10,6 +10,10 @@ export interface ClienteInput {
   password?: string
   ClienteTelefono: string
   ClienteDireccion: string
+  /** Punto exacto guardado del perfil (elegido en el mapa). */
+  ClienteLat?: number | null
+  ClienteLng?: number | null
+  ClientePlaceID?: string | null
 }
 
 export const clientService = {

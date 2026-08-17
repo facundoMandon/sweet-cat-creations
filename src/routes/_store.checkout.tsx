@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { motion } from "framer-motion";
 import { CheckCircle2, PartyPopper } from "lucide-react";
@@ -16,6 +16,18 @@ import { Field, Input } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import { EmptyState } from "@/components/cat-loader";
 import { brand, seoMeta } from "@/config";
+import { geocodificarDireccion } from "@/lib/maps.functions";
+import { tieneCoordenadas, ubicacionVacia, type Ubicacion } from "@/lib/maps";
+
+const LocationPicker = React.lazy(
+  () => import("@/components/store/location-picker"),
+);
+
+function MapaSkeleton() {
+  return (
+    <div className="h-72 w-full animate-pulse rounded-2xl border-2 border-border bg-muted" />
+  );
+}
 
 export const Route = createFileRoute("/_store/checkout")({
   head: () => ({ meta: seoMeta("checkout") }),
@@ -28,10 +40,11 @@ function CheckoutPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const syncCalendar = useServerFn(syncPedidoRecordatorios);
+  const geocode = useServerFn(geocodificarDireccion);
 
   const [nombre, setNombre] = React.useState(usuario?.nombre ?? "");
   const [telefono, setTelefono] = React.useState(usuario?.telefono ?? "");
-  const [direccion, setDireccion] = React.useState("");
+  const [ubicacion, setUbicacion] = React.useState<Ubicacion>(ubicacionVacia);
   const [usarGuardada, setUsarGuardada] = React.useState(true);
   const [fecha, setFecha] = React.useState("");
   const [enviando, setEnviando] = React.useState(false);
@@ -42,7 +55,7 @@ function CheckoutPage() {
   const direccionGuardada = usuario?.direccion?.trim() ?? "";
   const direccionEnvio = usarGuardada && direccionGuardada
     ? direccionGuardada
-    : direccion;
+    : ubicacion.direccion;
 
   React.useEffect(() => {
     if (usuario?.nombre) setNombre((n) => n || usuario.nombre);
@@ -58,12 +71,40 @@ function CheckoutPage() {
     }
     setEnviando(true);
     try {
+      // Punto exacto: el que marcó en el mapa o, si usa la dirección
+      // guardada, se geocodifica una única vez al confirmar.
+      let punto: { lat: number | null; lng: number | null; placeId: string | null } = {
+        lat: null,
+        lng: null,
+        placeId: null,
+      };
+      if (!usarGuardada && tieneCoordenadas(ubicacion)) {
+        punto = {
+          lat: ubicacion.lat,
+          lng: ubicacion.lng,
+          placeId: ubicacion.placeId,
+        };
+      } else {
+        const geo = await geocode({ data: { direccion: direccionEnvio.trim() } })
+          .catch(() => null);
+        if (geo && geo.ok) {
+          punto = {
+            lat: geo.resultado.lat,
+            lng: geo.resultado.lng,
+            placeId: geo.resultado.placeId,
+          };
+        }
+      }
+
       let clienteId = usuario?.clienteId;
       if (!clienteId) {
         const cliente = await clientService.create({
           ClienteNombre: nombre,
           ClienteTelefono: telefono,
           ClienteDireccion: direccionEnvio,
+          ClienteLat: punto.lat,
+          ClienteLng: punto.lng,
+          ClientePlaceID: punto.placeId,
         });
         clienteId = cliente.ClienteID;
       } else {
@@ -72,12 +113,24 @@ function CheckoutPage() {
           ClienteNombre: nombre,
           ClienteTelefono: telefono,
           ClienteDireccion: direccionGuardada || direccionEnvio,
+          ...(direccionGuardada
+            ? {}
+            : {
+                ClienteLat: punto.lat,
+                ClienteLng: punto.lng,
+                ClientePlaceID: punto.placeId,
+              }),
         });
       }
       const pedido = await orderService.checkout({
         ClienteID: clienteId,
         PedidoFechaEntrega: fecha,
         items,
+        PedidoDireccion: direccionEnvio.trim(),
+        PedidoLat: punto.lat,
+        PedidoLng: punto.lng,
+        PedidoPlaceID: punto.placeId,
+        PedidoReferencias: ubicacion.referencias,
       });
       // Recordatorios en el Google Calendar del vendedor (7 y 1 día antes)
       if (fecha) {
@@ -86,6 +139,9 @@ function CheckoutPage() {
             pedidoId: pedido.PedidoID,
             clienteNombre: nombre.trim(),
             fechaEntrega: fecha,
+            direccion: direccionEnvio.trim(),
+            lat: punto.lat,
+            lng: punto.lng,
           },
         }).catch(() => undefined);
       }
@@ -96,6 +152,9 @@ function CheckoutPage() {
         fechaEntrega: fecha,
         items,
         total,
+        lat: punto.lat,
+        lng: punto.lng,
+        referencias: ubicacion.referencias,
       });
       const link = whatsappUrl(mensaje);
       setPedidoId(pedido.PedidoID);
@@ -191,56 +250,44 @@ function CheckoutPage() {
                 placeholder="11 5555 5555"
               />
             </Field>
-            {direccionGuardada ? (
-              <div className="flex flex-col gap-3">
-                <p className="font-display text-sm font-bold">Dirección de envío</p>
-                <label className="flex cursor-pointer items-start gap-2 text-sm">
-                  <input
-                    type="radio"
-                    name="dirModo"
-                    className="mt-1"
-                    checked={usarGuardada}
-                    onChange={() => setUsarGuardada(true)}
-                  />
-                  <span>
-                    Usar mi dirección guardada
-                    <span className="block text-muted-foreground">
-                      {direccionGuardada}
-                    </span>
-                  </span>
-                </label>
-                <label className="flex cursor-pointer items-center gap-2 text-sm">
-                  <input
-                    type="radio"
-                    name="dirModo"
-                    checked={!usarGuardada}
-                    onChange={() => setUsarGuardada(false)}
-                  />
-                  <span>Enviar a otra dirección</span>
-                </label>
-                {!usarGuardada ? (
-                  <Field label="Otra dirección" htmlFor="dir">
-                    <Input
-                      id="dir"
-                      value={direccion}
-                      maxLength={250}
-                      onChange={(e) => setDireccion(e.target.value)}
-                      placeholder="Av. Siempreviva 742"
+            <div className="flex flex-col gap-3">
+              <p className="font-display text-sm font-bold">Dirección de envío</p>
+              {direccionGuardada ? (
+                <>
+                  <label className="flex cursor-pointer items-start gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="dirModo"
+                      className="mt-1"
+                      checked={usarGuardada}
+                      onChange={() => setUsarGuardada(true)}
                     />
-                  </Field>
-                ) : null}
-              </div>
-            ) : (
-              <Field label="Dirección" htmlFor="dir">
-                <Input
-                  id="dir"
-                  value={direccion}
-                  maxLength={250}
-                  onChange={(e) => setDireccion(e.target.value)}
-                  placeholder="Av. Siempreviva 742"
-                />
-              </Field>
-            )}
+                    <span>
+                      Usar mi dirección guardada
+                      <span className="block text-muted-foreground">
+                        {direccionGuardada}
+                      </span>
+                    </span>
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="dirModo"
+                      checked={!usarGuardada}
+                      onChange={() => setUsarGuardada(false)}
+                    />
+                    <span>Elegir otra ubicación en el mapa</span>
+                  </label>
+                </>
+              ) : null}
+              {!direccionGuardada || !usarGuardada ? (
+                <ClientOnly fallback={<MapaSkeleton />}>
+                  <React.Suspense fallback={<MapaSkeleton />}>
+                    <LocationPicker value={ubicacion} onChange={setUbicacion} />
+                  </React.Suspense>
+                </ClientOnly>
+              ) : null}
+            </div>
             <Field
               label="Fecha de entrega"
               htmlFor="fecha"

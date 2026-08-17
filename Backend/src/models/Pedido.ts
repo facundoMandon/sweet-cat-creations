@@ -15,6 +15,11 @@ export class Pedido extends Model<
   declare PedidoEstadoID: number;
   declare ClienteID: number;
   declare PedidoMontoTotal: number;
+  declare PedidoDireccion: string | null;
+  declare PedidoLat: number | null;
+  declare PedidoLng: number | null;
+  declare PedidoPlaceID: string | null;
+  declare PedidoReferencias: string | null;
 
   declare readonly createdAt: Date;
   declare readonly updatedAt: Date;

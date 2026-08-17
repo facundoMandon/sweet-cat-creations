@@ -59,6 +59,15 @@ export interface BrandConfig {
   /** Prefijo de las claves de localStorage: `${storagePrefix}_cart`, etc. */
   storagePrefix: string;
 
+  /** Configuración del selector de ubicación (Google Maps). */
+  maps: {
+    /** Centro por defecto del mapa cuando el cliente todavía no eligió punto. */
+    defaultCenter: { lat: number; lng: number };
+    defaultZoom: number;
+    /** Código de país ISO para sesgar el autocompletado (ej. "ar"). */
+    region: string;
+  };
+
   features: {
     calendar: boolean;
     whatsappCheckout: boolean;
@@ -66,6 +75,8 @@ export interface BrandConfig {
     publicRegister: boolean;
     /** Muestra las credenciales demo en el login. */
     demoCredentials: boolean;
+    /** Selector de ubicación en el checkout + mapa en el panel admin. */
+    maps: boolean;
   };
 }
 

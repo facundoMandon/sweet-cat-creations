@@ -169,7 +169,7 @@ export async function sincronizarRecordatorios(
         },
         extendedProperties: {
           private: {
-            app: "blackcats",
+            app: brand.slug,
             pedidoId: String(input.pedidoId),
             diasAntes: String(dias),
             fechaEntrega: input.fechaEntrega.slice(0, 10),

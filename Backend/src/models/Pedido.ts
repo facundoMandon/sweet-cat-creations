@@ -52,7 +52,34 @@ Pedido.init(
       type: DataTypes.DECIMAL(12, 2),
       allowNull: false,
     },
+
+    PedidoDireccion: {
+      type: DataTypes.STRING(300),
+      allowNull: true,
+    },
+
+    PedidoLat: {
+      type: DataTypes.DECIMAL(10, 7),
+      allowNull: true,
+    },
+
+    PedidoLng: {
+      type: DataTypes.DECIMAL(10, 7),
+      allowNull: true,
+    },
+
+    PedidoPlaceID: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+    },
+
+    PedidoReferencias: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
     createdAt: {
+
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,

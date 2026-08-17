@@ -1,6 +1,7 @@
 import { formatCurrency, formatDate } from './format'
 import type { CartItem } from './types'
 import { brand, content } from '@/config'
+import { mapsPlaceUrl } from './maps'
 
 // Número del vendedor en formato internacional, solo dígitos (país + área + número)
 export const VENDEDOR_WHATSAPP = brand.contact.whatsapp
@@ -12,6 +13,9 @@ export interface OrderMessageInput {
   fechaEntrega: string | null
   items: CartItem[]
   total: number
+  lat?: number | null
+  lng?: number | null
+  referencias?: string | null
 }
 
 export function buildOrderMessage(input: OrderMessageInput): string {
@@ -32,6 +36,12 @@ export function buildOrderMessage(input: OrderMessageInput): string {
     ...lineas,
     '',
     `*Dirección de envío:* ${input.direccion}`,
+    ...(input.referencias ? [`*Referencias:* ${input.referencias}`] : []),
+    `*Ubicación en el mapa:* ${mapsPlaceUrl({
+      lat: input.lat ?? null,
+      lng: input.lng ?? null,
+      direccion: input.direccion,
+    })}`,
     `*Fecha de entrega:* ${formatDate(input.fechaEntrega)}`,
     '',
     `*TOTAL: ${formatCurrency(input.total)}*`,

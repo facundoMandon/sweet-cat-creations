@@ -8,7 +8,11 @@ import {
   paginated,
   type Paginated,
 } from "../utils/query.js";
-import { optionalString, requiredString } from "../utils/validation.js";
+import {
+  optionalCoordinate,
+  optionalString,
+  requiredString,
+} from "../utils/validation.js";
 import { createUsuario, deleteUsuario } from "./usuario.service.js";
 
 export interface AuthUser {
@@ -40,6 +44,9 @@ export function publicCliente(cliente: Cliente) {
     ClienteEmail: usuario?.UsuarioEmail ?? null,
     ClienteTelefono: cliente.ClienteTelefono,
     ClienteDireccion: cliente.ClienteDireccion,
+    ClienteLat: cliente.ClienteLat === null ? null : Number(cliente.ClienteLat),
+    ClienteLng: cliente.ClienteLng === null ? null : Number(cliente.ClienteLng),
+    ClientePlaceID: cliente.ClientePlaceID ?? null,
     Rol: usuario?.Rol ?? "cliente",
     createdAt: cliente.createdAt,
     updatedAt: cliente.updatedAt,
@@ -182,6 +189,27 @@ export async function updateCliente(
       body["ClienteDireccion"] ?? body["direccion"],
       "ClienteDireccion",
       250
+    );
+  }
+  if (body["ClienteLat"] !== undefined || body["lat"] !== undefined) {
+    data["ClienteLat"] = optionalCoordinate(
+      body["ClienteLat"] ?? body["lat"],
+      "ClienteLat",
+      90
+    );
+  }
+  if (body["ClienteLng"] !== undefined || body["lng"] !== undefined) {
+    data["ClienteLng"] = optionalCoordinate(
+      body["ClienteLng"] ?? body["lng"],
+      "ClienteLng",
+      180
+    );
+  }
+  if (body["ClientePlaceID"] !== undefined || body["placeId"] !== undefined) {
+    data["ClientePlaceID"] = optionalString(
+      body["ClientePlaceID"] ?? body["placeId"],
+      "ClientePlaceID",
+      200
     );
   }
   await cliente.update(data);

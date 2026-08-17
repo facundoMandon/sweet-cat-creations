@@ -2,7 +2,7 @@ import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { MessageSquare } from "lucide-react";
+import { MapPin, MessageSquare, Navigation } from "lucide-react";
 import { orderService, pedidoEstadoService } from "@/lib/services/orders";
 import type { Pedido } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -16,6 +16,18 @@ import {
   deletePedidoRecordatorios,
 } from "@/lib/calendar.functions";
 import { useToast } from "@/components/ui/toast";
+import { mapsDirectionsUrl, mapsEmbedUrl, tieneCoordenadas } from "@/lib/maps";
+
+/** Ubicación de entrega del pedido, con fallback a la del perfil. */
+function ubicacionDePedido(p: Pedido) {
+  return {
+    direccion: p.PedidoDireccion || p.cliente?.ClienteDireccion || "",
+    lat: p.PedidoLat ?? p.cliente?.ClienteLat ?? null,
+    lng: p.PedidoLng ?? p.cliente?.ClienteLng ?? null,
+    placeId: p.PedidoPlaceID ?? p.cliente?.ClientePlaceID ?? null,
+    referencias: p.PedidoReferencias ?? null,
+  };
+}
 
 export const Route = createFileRoute("/admin/pedidos")({
   component: AdminPedidos,
@@ -51,6 +63,9 @@ function AdminPedidos() {
         pedidoId: pedido.PedidoID,
         clienteNombre: pedido.cliente?.ClienteNombre ?? "Cliente",
         fechaEntrega: pedido.PedidoFechaEntrega,
+        direccion: ubicacionDePedido(pedido).direccion || null,
+        lat: ubicacionDePedido(pedido).lat ?? null,
+        lng: ubicacionDePedido(pedido).lng ?? null,
         cancelado,
       },
     }).catch(() => undefined);
@@ -91,7 +106,24 @@ function AdminPedidos() {
     {
       key: "entrega",
       header: "Entrega",
-      render: (p) => formatDate(p.PedidoFechaEntrega),
+      render: (p) => {
+        const u = ubicacionDePedido(p);
+        return (
+          <div className="flex flex-col items-start gap-1">
+            <span>{formatDate(p.PedidoFechaEntrega)}</span>
+            {u.direccion ? (
+              <a
+                href={mapsDirectionsUrl(u)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+              >
+                <Navigation className="size-3" /> Cómo llegar
+              </a>
+            ) : null}
+          </div>
+        );
+      },
     },
     {
       key: "items",
@@ -164,13 +196,43 @@ function AdminPedidos() {
               <p className="font-display font-bold">
                 {detalle.cliente?.ClienteNombre}
               </p>
-              <p className="text-muted-foreground">
-                {detalle.cliente?.ClienteDireccion}
+              <p className="flex items-start gap-1.5 text-muted-foreground">
+                <MapPin className="mt-0.5 size-3.5 shrink-0" />
+                {ubicacionDePedido(detalle).direccion || "Sin dirección"}
               </p>
+              {ubicacionDePedido(detalle).referencias ? (
+                <p className="text-muted-foreground">
+                  Referencias: {ubicacionDePedido(detalle).referencias}
+                </p>
+              ) : null}
               <p className="text-muted-foreground">
                 Entrega: {formatDate(detalle.PedidoFechaEntrega)}
               </p>
             </div>
+
+            {(() => {
+              const u = ubicacionDePedido(detalle);
+              const embed = mapsEmbedUrl(u);
+              if (!u.direccion && !tieneCoordenadas(u)) return null;
+              return (
+                <div className="flex flex-col gap-2">
+                  {embed ? (
+                    <iframe
+                      title={`Ubicación del pedido ${detalle.PedidoID}`}
+                      src={embed}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      className="h-48 w-full rounded-2xl border-2 border-border"
+                    />
+                  ) : null}
+                  <a href={mapsDirectionsUrl(u)} target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full" type="button">
+                      <Navigation className="size-4" /> Cómo llegar con Google Maps
+                    </Button>
+                  </a>
+                </div>
+              );
+            })()}
             <ul className="flex flex-col gap-3">
               {(detalle.renglones ?? []).map((r) => (
                 <li key={r.ProdPedidoID} className="flex gap-3">

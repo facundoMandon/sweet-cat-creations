@@ -60,3 +60,12 @@ desde `src/routes/__root.tsx`, sobreescribiendo los defaults de `src/styles.css`
 - Los componentes consumen la interfaz de `types.ts`, no valores literales: si
   más adelante la configuración se guarda en base de datos (modo SaaS
   multi-marca), alcanza con construir un `SiteConfig` distinto.
+
+## Ubicación de entrega (Google Maps)
+
+- `brand.maps.defaultCenter` / `defaultZoom` / `region`: centro inicial del mapa
+  del checkout y país usado para el autocompletado.
+- `brand.features.maps`: activa o desactiva el selector de ubicación.
+- Las claves de Google Maps las provee el conector (`VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY`
+  en el navegador y `GOOGLE_MAPS_API_KEY` + `LOVABLE_API_KEY` en el servidor);
+  nunca se escriben en `src/config`.

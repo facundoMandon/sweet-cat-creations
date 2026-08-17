@@ -128,6 +128,10 @@ export interface SyncInput {
   pedidoId: number
   clienteNombre: string
   fechaEntrega: string | null
+  /** Dirección de entrega mostrada/navegable desde el evento. */
+  direccion?: string | null | undefined
+  lat?: number | null | undefined
+  lng?: number | null | undefined
   /** Si el pedido está cancelado, se eliminan los recordatorios. */
   cancelado?: boolean | undefined
 }
@@ -146,6 +150,14 @@ export async function sincronizarRecordatorios(
   }
 
   const url = pedidoAdminUrl(input.pedidoId, request);
+  const tienePunto =
+    typeof input.lat === "number" && typeof input.lng === "number";
+  const mapsUrl = tienePunto
+    ? `https://www.google.com/maps/search/?api=1&query=${input.lat},${input.lng}`
+    : input.direccion
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(input.direccion)}`
+      : null;
+  const ubicacion = input.direccion ?? (tienePunto ? `${input.lat},${input.lng}` : null);
   const hoy = new Date().toISOString().slice(0, 10);
   let creados = 0;
 
@@ -158,8 +170,11 @@ export async function sincronizarRecordatorios(
         summary: `Recordatorio de Envío: Pedido N° ${input.pedidoId} - ${input.clienteNombre}`,
         description:
           `El pedido N° ${input.pedidoId} del Cliente ${input.clienteNombre} deberá ser entregado en ${dias} ` +
-          `${dias === 1 ? "día" : "días"}.\n\nVer detalle del pedido: ${url}`,
-        location: url,
+          `${dias === 1 ? "día" : "días"}.` +
+          (ubicacion ? `\n\nDirección de entrega: ${ubicacion}` : "") +
+          (mapsUrl ? `\nCómo llegar: ${mapsUrl}` : "") +
+          `\n\nVer detalle del pedido: ${url}`,
+        location: ubicacion ?? url,
         source: { title: `Pedido N° ${input.pedidoId}`, url },
         start: { date: fecha },
         end: { date: addDay(fecha) },

@@ -6,6 +6,12 @@ export interface CheckoutInput {
   ClienteID: number
   PedidoFechaEntrega: string
   items: CartItem[]
+  /** Ubicación de entrega elegida en el mapa. */
+  PedidoDireccion?: string | null
+  PedidoLat?: number | null
+  PedidoLng?: number | null
+  PedidoPlaceID?: string | null
+  PedidoReferencias?: string | null
 }
 
 export const orderService = {
@@ -54,6 +60,11 @@ export const orderService = {
         PedidoEstadoID: 1, // Pendiente
         ClienteID: input.ClienteID,
         PedidoMontoTotal: total,
+        PedidoDireccion: input.PedidoDireccion ?? null,
+        PedidoLat: input.PedidoLat ?? null,
+        PedidoLng: input.PedidoLng ?? null,
+        PedidoPlaceID: input.PedidoPlaceID ?? null,
+        PedidoReferencias: input.PedidoReferencias ?? null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
@@ -82,6 +93,11 @@ export const orderService = {
     const { data } = await api.post('/pedidos', {
       ClienteID: input.ClienteID,
       PedidoFechaEntrega: input.PedidoFechaEntrega,
+      PedidoDireccion: input.PedidoDireccion ?? null,
+      PedidoLat: input.PedidoLat ?? null,
+      PedidoLng: input.PedidoLng ?? null,
+      PedidoPlaceID: input.PedidoPlaceID ?? null,
+      PedidoReferencias: input.PedidoReferencias ?? null,
       renglones: input.items.map((it) => ({
         ProdID: it.producto.ProdID,
         Cantidad: it.cantidad,

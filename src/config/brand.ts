@@ -42,11 +42,19 @@ export const brand: BrandConfig = {
 
   storagePrefix: "blackcats",
 
+  maps: {
+    // Rosario, Santa Fe.
+    defaultCenter: { lat: -32.9442426, lng: -60.6505388 },
+    defaultZoom: 13,
+    region: "ar",
+  },
+
   features: {
     calendar: true,
     whatsappCheckout: true,
     notifications: true,
     publicRegister: true,
     demoCredentials: true,
+    maps: true,
   },
 };

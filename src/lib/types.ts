@@ -71,6 +71,12 @@ export interface Pedido {
   PedidoEstadoID: number
   ClienteID: number
   PedidoMontoTotal: number
+  /** Dirección de entrega del pedido (puede diferir de la del perfil). */
+  PedidoDireccion?: string | null | undefined
+  PedidoLat?: number | null | undefined
+  PedidoLng?: number | null | undefined
+  PedidoPlaceID?: string | null | undefined
+  PedidoReferencias?: string | null | undefined
   createdAt?: string | undefined
   updatedAt?: string | undefined
   cliente?: Cliente | undefined
@@ -114,6 +120,9 @@ export interface Cliente {
   ClienteEmail?: string | null | undefined
   ClienteTelefono: string
   ClienteDireccion: string
+  ClienteLat?: number | null | undefined
+  ClienteLng?: number | null | undefined
+  ClientePlaceID?: string | null | undefined
   Rol?: Rol | undefined
   createdAt?: string | undefined
   updatedAt?: string | undefined

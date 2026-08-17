@@ -108,3 +108,17 @@ export function requiredIdArray(value: unknown, field: string): number[] {
   }
   return value.map((v) => requiredId(v, field));
 }
+
+/** Coordenada geográfica opcional (latitud o longitud). */
+export function optionalCoordinate(
+  value: unknown,
+  field: string,
+  limite: number
+): number | null {
+  if (value === undefined || value === null || value === "") return null;
+  const n = Number(value);
+  if (!Number.isFinite(n) || Math.abs(n) > limite) {
+    throw badRequest(`El campo "${field}" no es una coordenada válida`);
+  }
+  return Number(n.toFixed(7));
+}

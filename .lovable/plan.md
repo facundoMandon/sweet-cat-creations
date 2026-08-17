@@ -9,40 +9,64 @@ Sí, es totalmente posible y no lleva mucho trabajo, porque la mitad ya está he
 
 ## Qué se construye
 
-### 1. Un único archivo de marca: `src/config/brand.ts`
+### 1. `src/config/types.ts` — la interfaz de configuración
 
-Todo lo que cambia entre clientes vive ahí:
+Contratos tipados (`BrandConfig`, `ContentConfig`, `ThemeConfig`, `SiteConfig`) que definen qué campos existen y cuáles son obligatorios. Los componentes consumen esta interfaz, no los objetos concretos: si mañana la config viene de una API o de una base de datos, los componentes no cambian.
 
-- Identidad: nombre, tagline, descripción, logo, favicon.
-- Contacto: WhatsApp del vendedor, email, redes, dirección.
-- SEO: plantilla de títulos (`"%s | {marca}"`), descripciones por página, URL base.
-- Integraciones: calendar ID del vendedor, URL de la API backend.
-- Textos de la home (hero, secciones) y del footer.
+### 2. `src/config/brand.ts` — identidad y contacto
+
+- Nombre, slug, tagline, logo, favicon, mascota.
+- Contacto: WhatsApp del vendedor, email, redes sociales, dirección física.
+- SEO base: plantilla de títulos (`"%s | {marca}"`), autor, URL pública.
+- Calendar ID del vendedor.
 - Prefijo de almacenamiento local (`{slug}_cart`, `{slug}_user`).
-- Feature flags: mostrar/ocultar calendario, WhatsApp, notificaciones.
+- Feature flags: calendario, WhatsApp, notificaciones, registro público.
 
-### 2. Un archivo de tema: `src/config/theme.ts` + tokens en CSS
+Solo datos públicos de marca. Ningún secreto.
 
-- Paleta expresada como un objeto de marca (`primary`, `secondary`, `accent`, `success`, `destructive`, `background`, `foreground`, neutros) más `radius`, `fonts` y sombras.
-- El tema se inyecta en `<head>` como variables CSS, así `styles.css` deja de tener valores fijos y solo consume `var(...)`.
-- Fuentes: el `<link>` de Google Fonts se genera desde la config, no hardcodeado.
-- Se incluyen 2-3 presets de ejemplo (`kawaii-coral` actual, uno oscuro, uno neutro) para mostrar el cambio de estética en un cambio de línea.
+### 3. `src/config/content.ts` — todos los textos
 
-### 3. Reemplazo de valores fijos
+Separado de la marca, porque cambia por motivos distintos:
 
-Sustituir todas las apariciones detectadas por lecturas de la config: navbar, footer, sidebar admin, `head()` de cada ruta, `whatsapp.ts`, `calendar.server.ts`, `cart-context`, `auth-context`, hero de la home, credenciales demo del login.
+- Copys del hero, secciones de la home, footer.
+- Títulos y descripciones SEO de cada ruta.
+- Etiquetas de navegación (tienda y sidebar admin).
+- Mensajes vacíos, de error y de éxito.
+- Plantilla del mensaje de WhatsApp.
 
-### 4. Documento de traspaso: `BRANDING.md`
+### 4. `src/config/theme.ts` — paleta, tipografías, radios
 
-Checklist de 10 pasos para vender el molde: cambiar `brand.ts`, elegir/definir paleta en `theme.ts`, reemplazar logo/imágenes en `src/assets`, apuntar la API, listo.
+- Paleta como objeto (`primary`, `secondary`, `accent`, `success`, `destructive`, `background`, `foreground`, neutros) más `radius`, fuentes y sombras.
+- El tema se inyecta en `<head>` como variables CSS, así `styles.css` solo consume `var(...)`.
+- El `<link>` de Google Fonts se genera desde la config, no hardcodeado.
+- 2-3 presets de ejemplo (`kawaii-coral` actual, uno oscuro, uno neutro) para cambiar la estética en una línea.
+
+### 5. `src/config/index.ts` — punto de entrada único
+
+Reexporta todo y expone un objeto `siteConfig: SiteConfig` que agrupa `brand`, `content` y `theme`. La app importa siempre `@/config`, nunca los archivos individuales.
+
+### 6. Secretos y entorno: fuera de la config visual
+
+- La URL de la API sigue en `VITE_API_URL` (variable de entorno), leída en `src/lib/api-client.ts`. No entra en `brand.ts`.
+- `JWT_SECRET`, `DATABASE_URL` y `SEED_TOKEN` permanecen exclusivamente como variables de entorno del backend, nunca en `src/config`.
+- Se agrega un comentario-guardia en `src/config/index.ts` que deja explícito que ese directorio es público y va al bundle del navegador.
+
+### 7. Reemplazo de valores fijos
+
+Sustituir todas las apariciones detectadas por lecturas de `@/config`: navbar, footer, sidebar admin, `head()` de cada ruta, `whatsapp.ts`, `calendar.server.ts`, `cart-context`, `auth-context`, hero de la home, credenciales demo del login.
+
+### 8. Documento de traspaso: `BRANDING.md`
+
+Checklist para vender el molde: editar `brand.ts`, ajustar textos en `content.ts`, elegir paleta en `theme.ts`, reemplazar imágenes en `public/`, setear `VITE_API_URL` y los secretos del backend.
 
 ## Detalles técnicos
 
-- `brand.ts` y `theme.ts` son módulos TS puros (sin dependencias) importables desde cliente y server.
+- Los cuatro archivos de config son módulos TS puros (sin dependencias), importables desde cliente y server.
 - Las variables CSS se emiten desde `__root.tsx` con un `<style>` generado a partir de `theme.ts`, sobreescribiendo `:root`; `styles.css` conserva los defaults para que nada quede sin estilo durante SSR.
-- Los colores se definen en formato `oklch` (igual que hoy) con helper para aceptar hex y convertirlo, así vos podés pegar una paleta en hex.
+- Colores en `oklch` (como hoy) con helper para aceptar hex y convertirlo.
 - Nada de lógica de negocio cambia: es refactor de presentación y configuración.
 
 ## Alcance
 
-No incluye: multi-tenant en runtime (varias marcas en la misma instancia), panel visual de theming, ni cambio de idioma. Si más adelante querés vender SaaS en vez de instancias separadas, la config se mueve a base de datos sobre esta misma estructura.
+No incluye: multi-tenant en runtime (varias marcas en la misma instancia), panel visual de theming, ni cambio de idioma. Si más adelante querés vender SaaS en vez de instancias separadas, la config se mueve a base de datos respetando la misma interfaz `SiteConfig`.
+

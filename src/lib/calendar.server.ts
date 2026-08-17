@@ -9,16 +9,26 @@ const GATEWAY_URL =
 /** Calendario del vendedor donde se crean los recordatorios de envío. */
 export const VENDEDOR_CALENDAR_ID = "facundo-mandon@hotmail.com";
 
-/** URL base del sistema para los enlaces al detalle del pedido. */
-export const APP_BASE_URL =
-  process.env["APP_BASE_URL"] ?? "https://blackcats.lovable.app";
+/** Fallback cuando no hay variable de entorno ni request disponible. */
+export const DEFAULT_APP_BASE_URL = "https://blackcats.lovable.app/";
+
+/** Resuelve la URL base del sistema en este orden: env → request origin → fallback. */
+export function resolveAppBaseUrl(request?: Request): string {
+  const envUrl = process.env["APP_BASE_URL"];
+  if (envUrl) return envUrl.replace(/\/+$/, "") + "/";
+  const requestOrigin = request ? new URL(request.url).origin : undefined;
+  if (requestOrigin) return requestOrigin + "/";
+  return DEFAULT_APP_BASE_URL;
+}
+
+export function pedidoAdminUrl(pedidoId: number, request?: Request): string {
+  return `${resolveAppBaseUrl(request)}admin/pedidos?pedido=${pedidoId}`;
+}
 
 /** Días de anticipación de cada recordatorio. */
 export const RECORDATORIO_DIAS = [7, 1] as const;
 
-export function pedidoAdminUrl(pedidoId: number): string {
-  return `${APP_BASE_URL}/admin/pedidos?pedido=${pedidoId}`;
-}
+
 
 export interface CalendarEvent {
   id: string
@@ -126,13 +136,14 @@ export interface SyncInput {
  */
 export async function sincronizarRecordatorios(
   input: SyncInput,
+  request?: Request,
 ): Promise<{ creados: number; eliminados: number }> {
   const eliminados = await eliminarRecordatorios(input.pedidoId);
   if (input.cancelado || !input.fechaEntrega) {
     return { creados: 0, eliminados };
   }
 
-  const url = pedidoAdminUrl(input.pedidoId);
+  const url = pedidoAdminUrl(input.pedidoId, request);
   const hoy = new Date().toISOString().slice(0, 10);
   let creados = 0;
 

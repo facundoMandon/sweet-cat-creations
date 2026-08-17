@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 const syncSchema = z.object({
@@ -13,8 +14,9 @@ export const syncPedidoRecordatorios = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => syncSchema.parse(data))
   .handler(async ({ data }) => {
     const { sincronizarRecordatorios } = await import("./calendar.server");
+    const request = getRequest();
     try {
-      return { ok: true as const, ...(await sincronizarRecordatorios(data)) };
+      return { ok: true as const, ...(await sincronizarRecordatorios(data, request)) };
     } catch (error) {
       return {
         ok: false as const,

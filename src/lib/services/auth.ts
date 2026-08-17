@@ -2,6 +2,7 @@ import axios from 'axios'
 
 import { API_URL, getToken, setToken } from '../api-client'
 import type { Usuario } from '../types'
+import { storageKey } from '@/config'
 
 export interface AuthResult {
   token: string
@@ -96,7 +97,7 @@ export const authService = {
     } finally {
       setToken(null)
       if (typeof window !== 'undefined') {
-        window.localStorage.removeItem('blackcats_user')
+        window.localStorage.removeItem(storageKey('user'))
       }
     }
   },

@@ -15,23 +15,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import { EmptyState } from "@/components/cat-loader";
+import { brand, seoMeta } from "@/config";
 
 export const Route = createFileRoute("/_store/checkout")({
-  head: () => ({
-    meta: [
-      { title: "Checkout | Black Cats" },
-      {
-        name: "description",
-        content:
-          "Confirmá tus datos de entrega y finalizá tu pedido de dulces personalizados.",
-      },
-      { property: "og:title", content: "Checkout | Black Cats" },
-      {
-        property: "og:description",
-        content: "Confirmá tus datos y finalizá tu pedido en Black Cats.",
-      },
-    ],
-  }),
+  head: () => ({ meta: seoMeta("checkout") }),
   component: CheckoutPage,
 });
 
@@ -140,7 +127,7 @@ function CheckoutPage() {
           </h1>
           <p className="text-muted-foreground">
             Te enviamos el detalle por WhatsApp para coordinar la entrega.
-            ¡Gracias por elegir Black Cats!{" "}
+            ¡Gracias por elegir {brand.name}!{" "}
             <PartyPopper className="inline size-4" />
           </p>
           {waLink ? (

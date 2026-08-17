@@ -5,9 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Black Cats — Design System "Kawaii Tech"
- * Paleta: coral #FF664B / rosa #FFC3C3 / menta #64C0A6 / tinta #08090A / lienzo #F4F4F4
- * Todos los colores en oklch. Nunca usar colores literales en los componentes.
+ * Design System white-label.
+ * Los valores de abajo son sólo defaults: la paleta real se define en
+ * src/config/theme.ts y se inyecta como variables CSS en el <head>.
+ * Nunca usar colores literales en los componentes.
  */
 
 @theme inline {
@@ -57,16 +58,24 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Baloo 2", "Quicksand", ui-rounded, sans-serif;
+  --font-sans: var(--brand-font-sans);
+  --font-display: var(--brand-font-display);
 
-  --shadow-kawaii: 0 8px 24px -14px oklch(0.139 0.003 246.3 / 0.35);
-  --shadow-kawaii-lg: 0 18px 40px -20px oklch(0.139 0.003 246.3 / 0.35);
+  --shadow-kawaii: var(--brand-shadow-kawaii);
+  --shadow-kawaii-lg: var(--brand-shadow-kawaii-lg);
 }
 
 :root {
   color-scheme: light;
   --radius: 1rem;
+
+  /* Defaults de marca. El tema activo (src/config/theme.ts) los sobreescribe
+     inyectando un bloque :root en el <head>. Nunca hardcodear colores en los
+     componentes: usar siempre las clases semánticas de Tailwind. */
+  --brand-font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --brand-font-display: "Baloo 2", "Quicksand", ui-rounded, sans-serif;
+  --brand-shadow-kawaii: 0 8px 24px -14px oklch(0.139 0.003 246.3 / 0.35);
+  --brand-shadow-kawaii-lg: 0 18px 40px -20px oklch(0.139 0.003 246.3 / 0.35);
 
   --background: oklch(0.969 0.004 56.4);
   --foreground: oklch(0.139 0.003 246.3);

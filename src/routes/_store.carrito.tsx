@@ -6,22 +6,10 @@ import { formatCurrency } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/cat-loader";
+import { seoMeta } from "@/config";
 
 export const Route = createFileRoute("/_store/carrito")({
-  head: () => ({
-    meta: [
-      { title: "Tu carrito | Black Cats" },
-      {
-        name: "description",
-        content: "Revisá tus dulces, cantidades y dedicatorias antes de pagar.",
-      },
-      { property: "og:title", content: "Tu carrito | Black Cats" },
-      {
-        property: "og:description",
-        content: "Revisá tus dulces antes de finalizar la compra.",
-      },
-    ],
-  }),
+  head: () => ({ meta: seoMeta("carrito") }),
   component: CarritoPage,
 });
 

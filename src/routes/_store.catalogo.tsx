@@ -13,6 +13,7 @@ import { CatLoader, EmptyState } from "@/components/cat-loader";
 import { Button } from "@/components/ui/button";
 import { Input, Select } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
+import { seoMeta } from "@/config";
 
 interface CatalogoSearch {
   q?: string | undefined;
@@ -30,22 +31,7 @@ export const Route = createFileRoute("/_store/catalogo")({
     evento: search["evento"] != null ? Number(search["evento"]) : undefined,
     combo: search["combo"] ? true : undefined,
   }),
-  head: () => ({
-    meta: [
-      { title: "Catálogo de dulces | Black Cats" },
-      {
-        name: "description",
-        content:
-          "Explorá chocolates, postres, combos y opciones saladas. Filtrá por categoría, evento y precio.",
-      },
-      { property: "og:title", content: "Catálogo de dulces | Black Cats" },
-      {
-        property: "og:description",
-        content:
-          "Explorá chocolates, postres, combos y opciones saladas de Black Cats.",
-      },
-    ],
-  }),
+  head: () => ({ meta: seoMeta("catalogo") }),
   component: CatalogoPage,
 });
 

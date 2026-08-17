@@ -1,8 +1,9 @@
 
 import * as React from 'react'
 import type { CartItem, Producto } from '@/lib/types'
+import { storageKey } from '@/config'
 
-const CART_KEY = 'blackcats_cart'
+const CART_KEY = storageKey('cart')
 
 interface CartContextValue {
   items: CartItem[]

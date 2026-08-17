@@ -15,12 +15,9 @@ import { useCart } from "@/context/cart-context";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
+import { brand, content } from "@/config";
 
-const links = [
-  { to: "/", label: "Inicio" },
-  { to: "/catalogo", label: "Catálogo" },
-  { to: "/pedidos", label: "Mis pedidos" },
-] as const;
+const links = content.nav.store;
 
 export function StoreNavbar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -43,12 +40,12 @@ export function StoreNavbar() {
           <motion.img
             whileHover={{ rotate: [0, -12, 10, 0] }}
             transition={{ duration: 0.5 }}
-            src="/mascot-cat.png"
+            src={brand.assets.logo}
             alt=""
             className="size-9 object-contain"
           />
           <span className="font-display text-xl font-extrabold tracking-tight">
-            Black Cats
+            {brand.name}
           </span>
         </Link>
 
@@ -57,7 +54,7 @@ export function StoreNavbar() {
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar dulces..."
+            placeholder={content.search.placeholder}
             aria-label="Buscar productos"
             className="h-10 pl-9"
           />
@@ -150,7 +147,7 @@ export function StoreNavbar() {
             <Input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Buscar dulces..."
+              placeholder={content.search.placeholder}
               aria-label="Buscar productos"
               className="pl-9"
             />

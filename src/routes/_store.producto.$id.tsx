@@ -20,23 +20,10 @@ import { CatLoader, EmptyState } from "@/components/cat-loader";
 import { ProductCard } from "@/components/store/product-card";
 import { useCart } from "@/context/cart-context";
 import { useToast } from "@/components/ui/toast";
+import { seoMeta } from "@/config";
 
 export const Route = createFileRoute("/_store/producto/$id")({
-  head: () => ({
-    meta: [
-      { title: "Detalle del producto | Black Cats" },
-      {
-        name: "description",
-        content:
-          "Mirá los detalles, el contenido del combo y personalizá tu dulce con una dedicatoria.",
-      },
-      { property: "og:title", content: "Detalle del producto | Black Cats" },
-      {
-        property: "og:description",
-        content: "Personalizá tu dulce de Black Cats con una dedicatoria.",
-      },
-    ],
-  }),
+  head: () => ({ meta: seoMeta("producto") }),
   component: ProductoDetalle,
 });
 

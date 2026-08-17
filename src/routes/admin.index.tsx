@@ -16,6 +16,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CatLoader } from "@/components/cat-loader";
+import { brand } from "@/config";
 
 export const Route = createFileRoute("/admin/")({
   component: AdminDashboard,
@@ -101,7 +102,7 @@ const nombreMesCapitalizado = nombreMes.charAt(0).toUpperCase() + nombreMes.slic
             Dashboard
           </h1>
           <p className="text-sm text-muted-foreground">
-            Resumen de la operación de Black Cats.
+            Resumen de la operación de {brand.name}.
           </p>
         </div>
         <Link

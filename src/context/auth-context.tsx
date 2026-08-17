@@ -3,8 +3,9 @@ import * as React from 'react'
 import { authService } from '@/lib/services/auth'
 import { setToken, getToken } from '@/lib/api-client'
 import type { Usuario } from '@/lib/types'
+import { storageKey } from '@/config'
 
-const USER_KEY = 'blackcats_user'
+const USER_KEY = storageKey('user')
 
 interface AuthContextValue {
   usuario: Usuario | null

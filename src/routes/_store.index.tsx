@@ -8,27 +8,10 @@ import { ProductCard } from "@/components/store/product-card";
 import { Button } from "@/components/ui/button";
 import { CatLoader } from "@/components/cat-loader";
 import { Card, CardContent } from "@/components/ui/card";
+import { brand, content, seoMeta } from "@/config";
 
 export const Route = createFileRoute("/_store/")({
-  head: () => ({
-    meta: [
-      { title: "Black Cats — Dulces y chocolates personalizados" },
-      {
-        name: "description",
-        content:
-          "Repostería y chocolatería artesanal personalizada. Combos, dedicatorias y dulces para cada evento especial.",
-      },
-      {
-        property: "og:title",
-        content: "Black Cats — Dulces y chocolates personalizados",
-      },
-      {
-        property: "og:description",
-        content:
-          "Repostería y chocolatería artesanal personalizada. Combos, dedicatorias y dulces para cada evento especial.",
-      },
-    ],
-  }),
+  head: () => ({ meta: seoMeta("home", true) }),
   component: HomePage,
 });
 
@@ -76,30 +59,30 @@ function HomePage() {
             className="flex flex-col gap-5"
           >
             <span className="inline-flex w-fit items-center gap-2 rounded-full bg-primary/15 px-4 py-1.5 font-display text-sm font-bold text-primary">
-              Productos artesanales
+              {content.home.badge}
             </span>
             <h1 className="font-display text-4xl font-extrabold leading-tight text-balance md:text-6xl">
-              Dulces que te hacen <span className="text-primary">ronronear</span>
+              {content.home.headline}{" "}
+              <span className="text-primary">{content.home.headlineAccent}</span>
             </h1>
             <p className="max-w-md text-lg leading-relaxed text-muted-foreground">
-              Chocolates, postres y combos personalizados hechos con
-              mucho amor por Black Cats. Endulzá cada momento especial.
+              {content.home.subheadline}
             </p>
             <div className="flex flex-wrap gap-3">
               <Link to="/catalogo" search={{}}>
-                <Button size="lg">Ver catálogo</Button>
+                <Button size="lg">{content.home.ctaPrimary}</Button>
               </Link>
               <Link to="/catalogo" search={{ combo: true }}>
                 <Button size="lg" variant="secondary">
-                  Combos especiales
+                  {content.home.ctaSecondary}
                 </Button>
               </Link>
             </div>
           </motion.div>
 
           <motion.img
-            src="/hero-treats.png"
-            alt="Selección de dulces kawaii de Black Cats"
+            src={brand.assets.hero}
+            alt={content.home.heroAlt}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: "spring", stiffness: 180, damping: 20, delay: 0.1 }}
@@ -111,7 +94,7 @@ function HomePage() {
       {/* ¿Qué preferís hoy? */}
       <section className="mx-auto w-full max-w-6xl px-4 py-14">
         <h2 className="mb-6 text-center font-display text-2xl font-bold md:text-3xl">
-          ¿Qué preferís hoy?
+          {content.home.categoriesTitle}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Link to="/catalogo" search={{ cat: 1 }}>

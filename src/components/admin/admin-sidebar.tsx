@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 import { Button } from "@/components/ui/button";
+import { brand, content } from "@/config";
 
 const links = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
@@ -93,12 +94,14 @@ export function AdminSidebar() {
       {/* Sidebar desktop */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col gap-6 border-r-2 border-border bg-card p-5 lg:flex">
         <Link to="/admin" className="flex items-center gap-2">
-          <img src="/mascot-cat.png" alt="" className="size-10 object-contain" />
+          <img src={brand.assets.logo} alt="" className="size-10 object-contain" />
           <div>
             <p className="font-display text-lg font-extrabold leading-none">
-              Black Cats
+              {brand.name}
             </p>
-            <p className="text-xs text-muted-foreground">Panel admin</p>
+            <p className="text-xs text-muted-foreground">
+              {content.nav.adminSubtitle}
+            </p>
           </div>
         </Link>
 

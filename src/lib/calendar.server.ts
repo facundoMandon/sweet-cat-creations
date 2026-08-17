@@ -3,14 +3,16 @@
  * Server-only: nunca importar desde código de cliente.
  */
 
+import { brand } from "@/config";
+
 const GATEWAY_URL =
   "https://connector-gateway.lovable.dev/google_calendar/calendar/v3";
 
 /** Calendario del vendedor donde se crean los recordatorios de envío. */
-export const VENDEDOR_CALENDAR_ID = "facundo-mandon@hotmail.com";
+export const VENDEDOR_CALENDAR_ID = brand.contact.calendarId;
 
 /** Fallback cuando no hay variable de entorno ni request disponible. */
-export const DEFAULT_APP_BASE_URL = "https://blackcats.lovable.app/";
+export const DEFAULT_APP_BASE_URL = brand.seo.baseUrl.replace(/\/+$/, "") + "/";
 
 /** Resuelve la URL base del sistema en este orden: env → request origin → fallback. */
 export function resolveAppBaseUrl(request?: Request): string {
@@ -101,7 +103,7 @@ export async function listarRecordatorios(
     maxResults: "250",
     singleEvents: "true",
     orderBy: "startTime",
-    privateExtendedProperty: "app=blackcats",
+    privateExtendedProperty: `app=${brand.slug}`,
   });
   if (pedidoId !== undefined) {
     params.append("privateExtendedProperty", `pedidoId=${pedidoId}`);
@@ -167,7 +169,7 @@ export async function sincronizarRecordatorios(
         },
         extendedProperties: {
           private: {
-            app: "blackcats",
+            app: brand.slug,
             pedidoId: String(input.pedidoId),
             diasAntes: String(dias),
             fechaEntrega: input.fechaEntrega.slice(0, 10),

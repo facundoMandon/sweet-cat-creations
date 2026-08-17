@@ -23,6 +23,7 @@ import {
   requiredDate,
   requiredId,
   requiredQuantity,
+  optionalCoordinate,
 } from "../utils/validation.js";
 import {
   pedidoEstadoId,
@@ -85,6 +86,41 @@ function parseRenglones(value: unknown): RenglonInput[] {
   return items;
 }
 
+interface UbicacionInput {
+  PedidoDireccion: string | null;
+  PedidoLat: number | null;
+  PedidoLng: number | null;
+  PedidoPlaceID: string | null;
+  PedidoReferencias: string | null;
+}
+
+/**
+ * Ubicación de entrega del pedido (dirección formateada + punto exacto que el
+ * cliente eligió en el mapa). Todo es opcional: si no viene, se usa la
+ * dirección del perfil del cliente.
+ */
+function parseUbicacion(
+  body: Record<string, unknown>,
+  cliente?: Cliente | null
+): UbicacionInput {
+  const direccion =
+    optionalString(body["PedidoDireccion"] ?? body["direccion"], "PedidoDireccion", 300) ??
+    (cliente ? cliente.ClienteDireccion || null : null);
+  const lat = optionalCoordinate(body["PedidoLat"] ?? body["lat"], "PedidoLat", 90);
+  const lng = optionalCoordinate(body["PedidoLng"] ?? body["lng"], "PedidoLng", 180);
+  return {
+    PedidoDireccion: direccion,
+    PedidoLat: lat !== null && lng !== null ? lat : null,
+    PedidoLng: lat !== null && lng !== null ? lng : null,
+    PedidoPlaceID: optionalString(body["PedidoPlaceID"] ?? body["placeId"], "PedidoPlaceID", 200),
+    PedidoReferencias: optionalString(
+      body["PedidoReferencias"] ?? body["referencias"],
+      "PedidoReferencias",
+      500
+    ),
+  };
+}
+
 /** La entrega debe ser, como mínimo, mañana. */
 function parseFechaEntrega(value: unknown): Date {
   const raw = requiredDate(value, "PedidoFechaEntrega");
@@ -133,6 +169,7 @@ export async function createPedido(
   const cliente = await resolverCliente(body, user);
   const fechaEntrega = parseFechaEntrega(body["PedidoFechaEntrega"]);
   const renglones = parseRenglones(body["renglones"] ?? body["items"]);
+  const ubicacion = parseUbicacion(body, cliente);
   const inactivoId = await prodEstadoId("Inactivo");
   const sinStockId = await prodEstadoId("Sin Stock");
   const pendienteId = await pedidoEstadoId("Pendiente");
@@ -144,6 +181,7 @@ export async function createPedido(
         PedidoEstadoID: pendienteId,
         ClienteID: cliente.ClienteID,
         PedidoMontoTotal: 0,
+        ...ubicacion,
       } as never,
       { transaction: t }
     );
@@ -346,6 +384,13 @@ export async function updatePedido(
       ? parseFechaEntrega(body["PedidoFechaEntrega"])
       : pedido.PedidoFechaEntrega;
 
+  const tieneUbicacion =
+    body["PedidoDireccion"] !== undefined ||
+    body["PedidoLat"] !== undefined ||
+    body["PedidoReferencias"] !== undefined ||
+    body["PedidoPlaceID"] !== undefined;
+  const ubicacion = tieneUbicacion ? parseUbicacion(body, clienteDueno) : null;
+
   const renglonesInput = body["renglones"] ?? body["items"];
   const renglones =
     renglonesInput !== undefined ? parseRenglones(renglonesInput) : null;
@@ -392,11 +437,15 @@ export async function updatePedido(
         {
           PedidoFechaEntrega: fechaEntrega,
           PedidoMontoTotal: Number(total.toFixed(2)),
+          ...(ubicacion ?? {}),
         },
         { transaction: t }
       );
     } else {
-      await pedido.update({ PedidoFechaEntrega: fechaEntrega }, { transaction: t });
+      await pedido.update(
+        { PedidoFechaEntrega: fechaEntrega, ...(ubicacion ?? {}) },
+        { transaction: t }
+      );
     }
   });
 

@@ -6,6 +6,9 @@ const syncSchema = z.object({
   pedidoId: z.number().int().positive(),
   clienteNombre: z.string().min(1).max(200),
   fechaEntrega: z.string().min(8).max(40).nullable(),
+  direccion: z.string().max(300).nullable().optional(),
+  lat: z.number().min(-90).max(90).nullable().optional(),
+  lng: z.number().min(-180).max(180).nullable().optional(),
   cancelado: z.boolean().optional(),
 });
 

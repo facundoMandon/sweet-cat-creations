@@ -25,6 +25,10 @@ export function pedidoAdminUrl(pedidoId: number, request?: Request): string {
   return `${resolveAppBaseUrl(request)}admin/pedidos?pedido=${pedidoId}`;
 }
 
+/** Días de anticipación de cada recordatorio. */
+export const RECORDATORIO_DIAS = [7, 1] as const;
+
+
 
 export interface CalendarEvent {
   id: string

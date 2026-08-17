@@ -14,13 +14,14 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/context/auth-context";
 import { CartProvider } from "@/context/cart-context";
 import { ToastProvider } from "@/components/ui/toast";
+import { brand, buildThemeCss, theme } from "@/config";
 
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <img
-          src="/mascot-cat.png"
+          src={brand.assets.logo}
           alt=""
           className="mx-auto size-28 object-contain animate-float-slow"
         />
@@ -89,13 +90,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Black Cats — Repostería y chocolates personalizados" },
-      {
-        name: "description",
-        content:
-          "Tienda online de repostería y chocolatería personalizada: combos, dedicatorias y dulces artesanales.",
-      },
-      { name: "author", content: "Black Cats" },
+      { title: `${brand.name} — ${brand.tagline}` },
+      { name: "description", content: brand.description },
+      { name: "author", content: brand.seo.author },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -107,11 +104,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.gstatic.com",
         crossOrigin: "anonymous",
       },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700&display=swap",
-      },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      ...(theme.fonts.stylesheet
+        ? [{ rel: "stylesheet", href: theme.fonts.stylesheet }]
+        : []),
+      { rel: "icon", href: brand.assets.favicon },
     ],
   }),
   shellComponent: RootShell,
@@ -125,6 +121,8 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="es">
       <head>
         <HeadContent />
+        {/* Variables CSS del tema activo (src/config/theme.ts) */}
+        <style dangerouslySetInnerHTML={{ __html: buildThemeCss() }} />
       </head>
       <body>
         {children}

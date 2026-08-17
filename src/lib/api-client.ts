@@ -1,4 +1,5 @@
 import axios from "axios";
+import { storageKey } from "@/config";
 
 /**
  * Cliente HTTP centralizado.
@@ -9,7 +10,7 @@ export const API_URL =
   (import.meta.env["VITE_API_URL"] as string | undefined) ?? "";
 export const USE_MOCK = !API_URL;
 
-const TOKEN_KEY = "blackcats_token";
+const TOKEN_KEY = storageKey("token");
 
 export function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -62,7 +63,7 @@ api.interceptors.response.use(
     if (error?.response?.status === 401) {
       setToken(null);
       if (typeof window !== "undefined") {
-        window.localStorage.removeItem("blackcats_user");
+        window.localStorage.removeItem(storageKey("user"));
       }
     }
     const message =

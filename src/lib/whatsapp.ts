@@ -1,8 +1,9 @@
 import { formatCurrency, formatDate } from './format'
 import type { CartItem } from './types'
+import { brand, content } from '@/config'
 
 // Número del vendedor en formato internacional, solo dígitos (país + área + número)
-export const VENDEDOR_WHATSAPP = '5493412288582'
+export const VENDEDOR_WHATSAPP = brand.contact.whatsapp
 
 export interface OrderMessageInput {
   pedidoId: number
@@ -35,8 +36,8 @@ export function buildOrderMessage(input: OrderMessageInput): string {
     '',
     `*TOTAL: ${formatCurrency(input.total)}*`,
     '',
-    '¡Muchas gracias por su atención! Quedo a la espera de la confirmación del pedido.',
-    'Saludos cordiales - Black Cats',
+    content.whatsapp.closing,
+    `${content.whatsapp.signature} - ${brand.name}`,
   ].join('\n')
 }
 

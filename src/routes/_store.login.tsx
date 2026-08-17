@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
+import { brand, content, seoMeta } from "@/config";
 
 interface LoginSearch {
   next?: string | undefined;
@@ -16,21 +17,7 @@ export const Route = createFileRoute("/_store/login")({
   validateSearch: (search: Record<string, unknown>): LoginSearch => ({
     next: typeof search["next"] === "string" ? search["next"] : undefined,
   }),
-  head: () => ({
-    meta: [
-      { title: "Iniciar sesión | Black Cats" },
-      {
-        name: "description",
-        content:
-          "Ingresá a tu cuenta de Black Cats para ver tus pedidos y comprar más rápido.",
-      },
-      { property: "og:title", content: "Iniciar sesión | Black Cats" },
-      {
-        property: "og:description",
-        content: "Ingresá a tu cuenta de Black Cats.",
-      },
-    ],
-  }),
+  head: () => ({ meta: seoMeta("login") }),
   component: LoginPage,
 });
 
@@ -170,7 +157,7 @@ function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="hola@blackcats.com"
+                  placeholder={brand.contact.email}
                 />
               </Field>
               <Field label="Contraseña" htmlFor="password">
@@ -227,11 +214,13 @@ function LoginPage() {
               </Button>
             </form>
 
-            <div className="mt-5 rounded-2xl bg-secondary/40 p-4 text-xs">
-              <p className="mb-1 font-display font-bold">Cuentas demo</p>
-              <p>admin@blackcats.com / admin123</p>
-              <p>cliente@blackcats.com / cliente123</p>
-            </div>
+            {brand.features.demoCredentials && content.demo ? (
+              <div className="mt-5 rounded-2xl bg-secondary/40 p-4 text-xs">
+                <p className="mb-1 font-display font-bold">Cuentas demo</p>
+                <p>{content.demo.admin}</p>
+                <p>{content.demo.cliente}</p>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
 

@@ -1,18 +1,10 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { ProtectedRoute } from "@/components/protected-route";
+import { seoMeta } from "@/config";
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({
-    meta: [
-      { title: "Panel de administración | Black Cats" },
-      {
-        name: "description",
-        content:
-          "Gestión de productos, pedidos, clientes y notificaciones de Black Cats.",
-      },
-    ],
-  }),
+  head: () => ({ meta: seoMeta("admin") }),
   component: AdminLayout,
 });
 

@@ -10,23 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CatLoader, EmptyState } from "@/components/cat-loader";
 import { ProtectedRoute } from "@/components/protected-route";
+import { seoMeta } from "@/config";
 
 export const Route = createFileRoute("/_store/pedidos")({
-  head: () => ({
-    meta: [
-      { title: "Mis pedidos | Black Cats" },
-      {
-        name: "description",
-        content:
-          "Seguí el estado de tus pedidos de repostería personalizada en Black Cats.",
-      },
-      { property: "og:title", content: "Mis pedidos | Black Cats" },
-      {
-        property: "og:description",
-        content: "Seguí el estado de tus pedidos en Black Cats.",
-      },
-    ],
-  }),
+  head: () => ({ meta: seoMeta("pedidos") }),
   component: () => (
     <ProtectedRoute>
       <MisPedidos />

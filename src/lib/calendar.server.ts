@@ -136,13 +136,14 @@ export interface SyncInput {
  */
 export async function sincronizarRecordatorios(
   input: SyncInput,
+  request?: Request,
 ): Promise<{ creados: number; eliminados: number }> {
   const eliminados = await eliminarRecordatorios(input.pedidoId);
   if (input.cancelado || !input.fechaEntrega) {
     return { creados: 0, eliminados };
   }
 
-  const url = pedidoAdminUrl(input.pedidoId);
+  const url = pedidoAdminUrl(input.pedidoId, request);
   const hoy = new Date().toISOString().slice(0, 10);
   let creados = 0;
 

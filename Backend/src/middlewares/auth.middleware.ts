@@ -33,9 +33,16 @@ export function authMiddleware(
   next: NextFunction
 ): void {
   const token = readToken(req);
-  if (!token) return next(unauthorized("Falta el token de acceso"));
 
+
+  console.log("AUTH HEADER:", req.headers.authorization);
+  console.log("TOKEN:", token ? "EXISTE" : "NO EXISTE");
+  
+  if (!token) return next(unauthorized("Falta el token de acceso"));
   const payload = verifyAccessToken(token);
+
+   console.log("JWT PAYLOAD:", payload);
+
   if (!payload) return next(unauthorized("Token inválido o expirado"));
 
   req.user = toUser(payload);

@@ -35,6 +35,20 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+// Agrega automáticamente el JWT a las peticiones
+api.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 /** La API responde `{ success, data, meta }`; esto devuelve sólo `data`. */
 export function unwrap<T>(payload: unknown): T {
   if (payload && typeof payload === "object" && "data" in payload) {

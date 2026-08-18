@@ -151,7 +151,7 @@ function ProductoDetalle() {
                   {producto.itemsCombo.map((item) => (
                     <li key={item.ProdID} className="flex items-center gap-3">
                       <img
-                        src={item.ProdImg || "/mascot-cat.png"}
+                        src={cloudinaryUrl(item.ProdImgPublicId, item.ProdImg, "thumb", "/mascot-cat.png")}
                         alt=""
                         className="size-12 rounded-xl border-2 border-border object-cover"
                       />

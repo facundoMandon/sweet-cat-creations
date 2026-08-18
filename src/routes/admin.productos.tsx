@@ -215,11 +215,14 @@ function ProductoForm({
             onChange={(e) => set("ProdPrecio", Number(e.target.value))}
           />
         </Field>
-        <Field label="Imagen (URL)">
-          <Input
-            value={form.ProdImg ?? ""}
-            onChange={(e) => set("ProdImg", e.target.value)}
-            placeholder="/products/..."
+        <Field label="Imagen">
+          <ImageUploader
+            imageUrl={form.ProdImg}
+            publicId={form.ProdImgPublicId}
+            onChange={(url, publicId) => {
+              set("ProdImg", url);
+              set("ProdImgPublicId", publicId);
+            }}
           />
         </Field>
         <Field label="Subcategoría">

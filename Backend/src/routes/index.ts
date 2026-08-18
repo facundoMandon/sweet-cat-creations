@@ -37,6 +37,7 @@ router.use('/subcategorias', subCategoriaRouter);
 router.use('/eventos', eventoRouter);
 router.use('/estados', estadoRouter);
 router.use('/productos', productoRoutes);
+router.use('/uploads', uploadRoutes);
 router.use('/notificaciones', notificacionRoutes);
 router.use('/seed', seedRoutes);
 

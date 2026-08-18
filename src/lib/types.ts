@@ -29,6 +29,7 @@ export interface Producto {
   SubCatID: number
   ProdEstadoID: number
   ProdImg: string | null
+  ProdImgPublicId: string | null
   EsCombo: boolean
   ProdPrecio: number
   createdAt?: string | undefined

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { productService } from "@/lib/services/products";
 import { formatCurrency } from "@/lib/format";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Field, Textarea } from "@/components/ui/field";

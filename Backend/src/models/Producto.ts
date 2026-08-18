@@ -16,6 +16,7 @@ export class Producto extends Model<
   declare SubCatID: number;
   declare ProdEstadoID: number;
   declare ProdImg: string | null;
+  declare ProdImgPublicId: string | null;
   declare EsCombo: boolean;
   declare ProdPrecio: number;
 
@@ -53,6 +54,11 @@ Producto.init(
 
     ProdImg: {
       type: DataTypes.STRING(500),
+      allowNull: true,
+    },
+
+    ProdImgPublicId: {
+      type: DataTypes.STRING(200),
       allowNull: true,
     },
 

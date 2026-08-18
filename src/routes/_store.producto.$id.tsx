@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { productService } from "@/lib/services/products";
 import { formatCurrency } from "@/lib/format";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Field, Textarea } from "@/components/ui/field";
@@ -98,7 +99,7 @@ function ProductoDetalle() {
           className="relative overflow-hidden rounded-4xl border-2 border-border bg-secondary/30 shadow-kawaii"
         >
           <img
-            src={producto.ProdImg || "/mascot-cat.png"}
+            src={cloudinaryUrl(producto.ProdImgPublicId, producto.ProdImg, "detail", "/mascot-cat.png")}
             alt={producto.ProdNombre}
             className="aspect-square w-full object-cover"
           />
@@ -150,7 +151,7 @@ function ProductoDetalle() {
                   {producto.itemsCombo.map((item) => (
                     <li key={item.ProdID} className="flex items-center gap-3">
                       <img
-                        src={item.ProdImg || "/mascot-cat.png"}
+                        src={cloudinaryUrl(item.ProdImgPublicId, item.ProdImg, "thumb", "/mascot-cat.png")}
                         alt=""
                         className="size-12 rounded-xl border-2 border-border object-cover"
                       />

@@ -31,6 +31,7 @@ import {
   requiredPositiveNumber,
   requiredString,
 } from "../utils/validation.js";
+import { configureCloudinary, cloudinary } from "../config/cloudinary.js";
 
 const SORTS: Record<string, string | string[]> = {
   nombre: "ProdNombre",
@@ -148,6 +149,7 @@ interface ProductoInput {
   SubCatID: number;
   ProdEstadoID: number;
   ProdImg: string | null;
+  ProdImgPublicId: string | null;
   EsCombo: boolean;
   ProdPrecio: number;
   eventoIds: number[] | undefined;
@@ -161,6 +163,7 @@ async function parseProductoInput(body: Record<string, unknown>): Promise<Produc
     SubCatID: requiredId(body["SubCatID"], "SubCatID"),
     ProdEstadoID: requiredId(body["ProdEstadoID"], "ProdEstadoID"),
     ProdImg: optionalString(body["ProdImg"], "ProdImg", 500),
+    ProdImgPublicId: optionalString(body["ProdImgPublicId"], "ProdImgPublicId", 200),
     EsCombo: requiredBoolean(body["EsCombo"] ?? false, "EsCombo"),
     ProdPrecio: requiredPositiveNumber(body["ProdPrecio"], "ProdPrecio"),
     eventoIds: body["eventoIds"] === undefined
@@ -221,6 +224,7 @@ export async function createProducto(
     SubCatID: input.SubCatID,
     ProdEstadoID: input.ProdEstadoID,
     ProdImg: input.ProdImg,
+    ProdImgPublicId: input.ProdImgPublicId,
     EsCombo: input.EsCombo,
     ProdPrecio: input.ProdPrecio,
   } as never);
@@ -235,15 +239,33 @@ export async function updateProducto(
   const producto = await Producto.findByPk(id);
   if (!producto) throw notFound("Producto no encontrado");
   const input = await parseProductoInput(body);
+
+  const publicIdAnterior = producto.get("ProdImgPublicId") as string | null;
+  const nuevoPublicId = input.ProdImgPublicId;
+
   await producto.update({
     ProdNombre: input.ProdNombre,
     ProdDescripcion: input.ProdDescripcion,
     SubCatID: input.SubCatID,
     ProdEstadoID: input.ProdEstadoID,
     ProdImg: input.ProdImg,
+    ProdImgPublicId: nuevoPublicId,
     EsCombo: input.EsCombo,
     ProdPrecio: input.ProdPrecio,
   });
+
+  if (
+    publicIdAnterior &&
+    publicIdAnterior !== nuevoPublicId &&
+    configureCloudinary()
+  ) {
+    try {
+      await cloudinary.uploader.destroy(publicIdAnterior);
+    } catch (err) {
+      console.error("Cloudinary: error al eliminar imagen anterior", err);
+    }
+  }
+
   await syncRelaciones(producto, input);
   return getProducto(id, false);
 }
@@ -287,6 +309,15 @@ export async function deleteProducto(id: number): Promise<void> {
     throw conflict(
       "No se puede eliminar físicamente: el producto tiene historial de pedidos. Usá la baja lógica (Inactivo)."
     );
+  }
+
+  const publicId = producto.get("ProdImgPublicId") as string | null;
+  if (publicId && configureCloudinary()) {
+    try {
+      await cloudinary.uploader.destroy(publicId);
+    } catch (err) {
+      console.error("Cloudinary: error al eliminar imagen", err);
+    }
   }
 
   await producto.destroy();

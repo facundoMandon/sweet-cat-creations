@@ -5,6 +5,7 @@ import { CalendarDays, Package, MessageSquare } from "lucide-react";
 import { orderService } from "@/lib/services/orders";
 import { useAuth } from "@/context/auth-context";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -97,7 +98,7 @@ function MisPedidos() {
                     {(p.renglones ?? []).map((r) => (
                       <li key={r.ProdPedidoID} className="flex gap-3">
                         <img
-                          src={r.producto?.ProdImg || "/mascot-cat.png"}
+                          src={cloudinaryUrl(r.producto?.ProdImgPublicId, r.producto?.ProdImg, "thumb", "/mascot-cat.png")}
                           alt=""
                           className="size-14 rounded-xl border-2 border-border object-cover"
                         />

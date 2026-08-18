@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Minus, Plus, Trash2, ArrowRight, MessageSquare } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { formatCurrency } from "@/lib/format";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/cat-loader";
@@ -55,7 +56,7 @@ function CarritoPage() {
                       params={{ id: String(item.producto.ProdID) }}
                     >
                       <img
-                        src={item.producto.ProdImg || "/mascot-cat.png"}
+                        src={cloudinaryUrl(item.producto.ProdImgPublicId, item.producto.ProdImg, "card", "/mascot-cat.png")}
                         alt={item.producto.ProdNombre}
                         className="size-24 rounded-2xl border-2 border-border object-cover"
                       />

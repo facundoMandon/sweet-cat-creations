@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Gift, Sparkles, CalendarHeart } from "lucide-react";
 import type { Producto } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import { Badge } from "@/components/ui/badge";
 
 /** Tarjeta de producto kawaii con microinteracciones. */
@@ -37,7 +38,7 @@ export function ProductCard({
         >
           <div className="relative aspect-square overflow-hidden bg-accent/40">
             <img
-              src={producto.ProdImg || "/mascot-cat.png"}
+              src={cloudinaryUrl(producto.ProdImgPublicId, producto.ProdImg, "card", "/mascot-cat.png")}
               alt={producto.ProdNombre}
               loading="lazy"
               className="size-full object-cover transition-transform duration-500 group-hover:scale-105"

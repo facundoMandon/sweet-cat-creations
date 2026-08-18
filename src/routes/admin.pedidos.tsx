@@ -6,6 +6,7 @@ import { MapPin, MessageSquare, Navigation } from "lucide-react";
 import { orderService, pedidoEstadoService } from "@/lib/services/orders";
 import type { Pedido } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import { DataTable, type Column } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -237,7 +238,7 @@ function AdminPedidos() {
               {(detalle.renglones ?? []).map((r) => (
                 <li key={r.ProdPedidoID} className="flex gap-3">
                   <img
-                    src={r.producto?.ProdImg || "/mascot-cat.png"}
+                    src={cloudinaryUrl(r.producto?.ProdImgPublicId, r.producto?.ProdImg, "thumb", "/mascot-cat.png")}
                     alt=""
                     className="size-12 rounded-xl border-2 border-border object-cover"
                   />

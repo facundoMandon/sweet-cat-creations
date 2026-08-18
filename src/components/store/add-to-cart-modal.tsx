@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Minus, Plus, ShoppingBag, Gift } from "lucide-react";
 import type { Producto } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { Field, Textarea } from "@/components/ui/field";
@@ -44,7 +45,7 @@ export function AddToCartModal({
     <Modal open={open} onClose={onClose} title="Agregar al carrito">
       <div className="flex gap-4">
         <img
-          src={producto.ProdImg || "/mascot-cat.png"}
+          src={cloudinaryUrl(producto.ProdImgPublicId, producto.ProdImg, "card", "/mascot-cat.png")}
           alt={producto.ProdNombre}
           className="size-24 shrink-0 rounded-2xl border-2 border-border object-cover"
         />

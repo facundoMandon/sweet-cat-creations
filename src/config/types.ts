@@ -59,6 +59,22 @@ export interface BrandConfig {
   /** Prefijo de las claves de localStorage: `${storagePrefix}_cart`, etc. */
   storagePrefix: string;
 
+  /** Configuración de medios (Cloudinary). */
+  media: {
+    /** Cloud name público de Cloudinary. */
+    cloudinaryCloudName: string;
+    /** API key pública para subida directa. */
+    cloudinaryApiKey: string;
+    /** Carpeta de destino por defecto en Cloudinary. */
+    cloudinaryFolder: string;
+    /** Transformación usada para tarjetas de catálogo. */
+    cardTransformation: string;
+    /** Transformación usada para el detalle del producto. */
+    detailTransformation: string;
+    /** Transformación usada para miniaturas (carrito, admin). */
+    thumbTransformation: string;
+  };
+
   /** Configuración del selector de ubicación (Google Maps). */
   maps: {
     /** Centro por defecto del mapa cuando el cliente todavía no eligió punto. */

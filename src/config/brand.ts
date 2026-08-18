@@ -42,6 +42,15 @@ export const brand: BrandConfig = {
 
   storagePrefix: "blackcats",
 
+  media: {
+    cloudinaryCloudName: "omrsrwnk",
+    cloudinaryApiKey: "735783299386975",
+    cloudinaryFolder: "blackcats/productos",
+    cardTransformation: "c_fill,w_400,h_400,q_auto,f_auto",
+    detailTransformation: "c_fit,w_900,h_900,q_auto,f_auto",
+    thumbTransformation: "c_fill,w_80,h_80,q_auto,f_auto",
+  },
+
   maps: {
     // Rosario, Santa Fe.
     defaultCenter: { lat: -32.9442426, lng: -60.6505388 },

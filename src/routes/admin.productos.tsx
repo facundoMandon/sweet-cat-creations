@@ -10,10 +10,12 @@ import {
 import type { Producto } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
 import { DataTable, type Column } from "@/components/admin/data-table";
+import { ImageUploader } from "@/components/admin/image-uploader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 
 export const Route = createFileRoute("/admin/productos")({
   component: AdminProductos,
@@ -49,7 +51,7 @@ function AdminProductos() {
       render: (p) => (
         <div className="flex items-center gap-3">
           <img
-            src={p.ProdImg || "/mascot-cat.png"}
+            src={cloudinaryUrl(p.ProdImgPublicId, p.ProdImg, "thumb", "/mascot-cat.png")}
             alt=""
             className="size-10 rounded-xl border-2 border-border object-cover"
           />
@@ -152,7 +154,8 @@ function ProductoForm({
     ProdDescripcion: producto?.ProdDescripcion ?? "",
     SubCatID: producto?.SubCatID ?? subcats[0]?.SubCatID ?? 1,
     ProdEstadoID: producto?.ProdEstadoID ?? estados[0]?.ProdEstadoID ?? 1,
-    ProdImg: producto?.ProdImg ?? "",
+    ProdImg: producto?.ProdImg ?? null,
+    ProdImgPublicId: producto?.ProdImgPublicId ?? null,
     EsCombo: producto?.EsCombo ?? false,
     ProdPrecio: producto?.ProdPrecio ?? 0,
     eventoIds: (producto?.eventos ?? []).map((e) => e.EventoID),
@@ -212,11 +215,14 @@ function ProductoForm({
             onChange={(e) => set("ProdPrecio", Number(e.target.value))}
           />
         </Field>
-        <Field label="Imagen (URL)">
-          <Input
-            value={form.ProdImg ?? ""}
-            onChange={(e) => set("ProdImg", e.target.value)}
-            placeholder="/products/..."
+        <Field label="Imagen">
+          <ImageUploader
+            imageUrl={form.ProdImg}
+            publicId={form.ProdImgPublicId}
+            onChange={(url, publicId) => {
+              set("ProdImg", url);
+              set("ProdImgPublicId", publicId);
+            }}
           />
         </Field>
         <Field label="Subcategoría">

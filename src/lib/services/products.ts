@@ -42,6 +42,7 @@ export const productService = {
         SubCatID: input.SubCatID,
         ProdEstadoID: input.ProdEstadoID,
         ProdImg: input.ProdImg,
+        ProdImgPublicId: input.ProdImgPublicId,
         EsCombo: input.EsCombo,
         ProdPrecio: input.ProdPrecio,
         createdAt: new Date().toISOString(),

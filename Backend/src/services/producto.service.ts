@@ -163,6 +163,7 @@ async function parseProductoInput(body: Record<string, unknown>): Promise<Produc
     SubCatID: requiredId(body["SubCatID"], "SubCatID"),
     ProdEstadoID: requiredId(body["ProdEstadoID"], "ProdEstadoID"),
     ProdImg: optionalString(body["ProdImg"], "ProdImg", 500),
+    ProdImgPublicId: optionalString(body["ProdImgPublicId"], "ProdImgPublicId", 200),
     EsCombo: requiredBoolean(body["EsCombo"] ?? false, "EsCombo"),
     ProdPrecio: requiredPositiveNumber(body["ProdPrecio"], "ProdPrecio"),
     eventoIds: body["eventoIds"] === undefined

@@ -8,7 +8,7 @@ import { AppError } from "../utils/AppError.js";
  */
 export const firmarSubida = asyncHandler(async (_req, res) => {
   if (!configureCloudinary()) {
-    throw new AppError("Cloudinary no está configurado", 503);
+    throw new AppError(503, "Cloudinary no está configurado");
   }
 
   const timestamp = Math.round(Date.now() / 1000);

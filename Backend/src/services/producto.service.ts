@@ -292,5 +292,14 @@ export async function deleteProducto(id: number): Promise<void> {
     );
   }
 
+  const publicId = producto.get("ProdImgPublicId") as string | null;
+  if (publicId && configureCloudinary()) {
+    try {
+      await cloudinary.uploader.destroy(publicId);
+    } catch (err) {
+      console.error("Cloudinary: error al eliminar imagen", err);
+    }
+  }
+
   await producto.destroy();
 }

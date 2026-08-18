@@ -51,13 +51,16 @@ export const prodEstadoService = {
     const { data } = await api.get('/estados/productos')
     return unwrapList<ProdEstado>(data)
   },
-  async create(): Promise<ProdEstado> {
+  async create(_input: { ProdEstadoDescripcion: string }): Promise<ProdEstado> {
     throw new Error('Los estados de producto son fijos y no se pueden crear')
   },
-  async update(): Promise<ProdEstado> {
+  async update(
+    _id: number,
+    _input: { ProdEstadoDescripcion: string },
+  ): Promise<ProdEstado> {
     throw new Error('Los estados de producto son fijos y no se pueden editar')
   },
-  async remove(): Promise<void> {
+  async remove(_id: number): Promise<void> {
     throw new Error('Los estados de producto son fijos y no se pueden eliminar')
   },
 }

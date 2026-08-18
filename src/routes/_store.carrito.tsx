@@ -56,7 +56,7 @@ function CarritoPage() {
                       params={{ id: String(item.producto.ProdID) }}
                     >
                       <img
-                        src={item.producto.ProdImg || "/mascot-cat.png"}
+                        src={cloudinaryUrl(item.producto.ProdImgPublicId, item.producto.ProdImg, "card", "/mascot-cat.png")}
                         alt={item.producto.ProdNombre}
                         className="size-24 rounded-2xl border-2 border-border object-cover"
                       />

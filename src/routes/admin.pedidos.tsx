@@ -6,6 +6,7 @@ import { MapPin, MessageSquare, Navigation } from "lucide-react";
 import { orderService, pedidoEstadoService } from "@/lib/services/orders";
 import type { Pedido } from "@/lib/types";
 import { formatCurrency, formatDate } from "@/lib/format";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import { DataTable, type Column } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

@@ -33,10 +33,14 @@ Se aplica en `ProductCard`, detalle de producto, carrito, checkout y tablas admi
 - Imagen por defecto (`mascot-cat.png`) también configurable.
 
 ## Detalles técnicos
-- Backend: dependencia `cloudinary` (SDK oficial) solo para firmar y borrar; variables `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` en Render.
-- Frontend: solo necesita el `cloud_name` (público) más el endpoint de firma; sin claves en el bundle.
+- Backend (Render): dependencia `cloudinary` (SDK oficial) solo para firmar y borrar. Variables de entorno en Render, cargadas por vos:
+  - `CLOUDINARY_CLOUD_NAME=omrsrwnk`
+  - `CLOUDINARY_API_KEY=735783299386975`
+  - `CLOUDINARY_API_SECRET=<lo cargás vos en Render, nunca en el código>`
+- Frontend: `cloud_name` (`omrsrwnk`) y la API key son públicos, así que quedan en `src/config/brand.ts` bajo `media`. El API Secret no se usa nunca del lado navegador.
 - Validación en la firma: carpeta fija (`blackcats/productos`), tipos permitidos (jpg/png/webp) y tamaño máximo (~5 MB).
 - Tipos actualizados en `src/lib/types.ts` y en los servicios de productos.
 
-## Lo que necesito de vos
-Las tres credenciales de Cloudinary (cloud name, API key, API secret) para cargarlas como secretos. El secret se guarda solo del lado servidor.
+## Sobre el API Secret
+Sí: el API Secret lo guardás vos directamente en Render (Environment → Add Secret File / Environment Variable) con el nombre `CLOUDINARY_API_SECRET`. No hace falta que me lo pases ni que quede en el repo; el backend lo lee con `process.env`. Como fallback, si Cloudinary no está configurado, el formulario sigue aceptando una URL manual.
+

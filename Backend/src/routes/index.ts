@@ -4,6 +4,7 @@ import usuarioRoutes from './usuario.routes.js';
 import clienteRoutes from './cliente.routes.js';
 import pedidoRoutes from './pedido.routes.js';
 import productoRoutes from './producto.routes.js';
+import uploadRoutes from './upload.routes.js';
 import notificacionRoutes from './notificacion.routes.js';
 import seedRoutes from './seed.routes.js';
 import { categoriaRouter, subCategoriaRouter, eventoRouter, estadoRouter } from './catalogo.routes.js';

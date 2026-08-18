@@ -119,7 +119,10 @@ export async function listClientes(
   const { rows, count } = await Cliente.findAndCountAll({
     where: where as never,
     include: [USUARIO_INCLUDE],
-    order: [[column as string, dir]],
+    order: [[
+        { model: Usuario, as: "usuario" },
+        "UsuarioNombre", dir,
+]],
     limit: page.limit,
     offset: page.offset,
     distinct: true,

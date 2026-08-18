@@ -42,5 +42,5 @@ Se aplica en `ProductCard`, detalle de producto, carrito, checkout y tablas admi
 - Tipos actualizados en `src/lib/types.ts` y en los servicios de productos.
 
 ## Sobre el API Secret
-Sí: el API Secret lo guardás vos directamente en Render (Environment → Add Secret File / Environment Variable) con el nombre `CLOUDINARY_API_SECRET`. No hace falta que me lo pases ni que quede en el repo; el backend lo lee con `process.env`. Como fallback, si Cloudinary no está configurado, el formulario sigue aceptando una URL manual.
+Sí: el API Secret lo guardás vos directamente en Render (Environment → Add Secret File / Environment Variable) con el nombre `CLOUDINARY_SECRET`. No hace falta que me lo pases ni que quede en el repo; el backend lo lee con `process.env`. Como fallback, si Cloudinary no está configurado, el formulario sigue aceptando una URL manual.
 

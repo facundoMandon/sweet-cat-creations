@@ -112,6 +112,10 @@ export async function listClientes(
       }
     : {};
 
+    console.log("CLIENTES ORDER:", {
+  column,
+  dir,
+});
   const { rows, count } = await Cliente.findAndCountAll({
     where: where as never,
     include: [USUARIO_INCLUDE],

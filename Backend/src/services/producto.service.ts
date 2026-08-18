@@ -224,6 +224,7 @@ export async function createProducto(
     SubCatID: input.SubCatID,
     ProdEstadoID: input.ProdEstadoID,
     ProdImg: input.ProdImg,
+    ProdImgPublicId: input.ProdImgPublicId,
     EsCombo: input.EsCombo,
     ProdPrecio: input.ProdPrecio,
   } as never);

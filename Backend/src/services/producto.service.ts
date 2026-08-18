@@ -238,15 +238,33 @@ export async function updateProducto(
   const producto = await Producto.findByPk(id);
   if (!producto) throw notFound("Producto no encontrado");
   const input = await parseProductoInput(body);
+
+  const publicIdAnterior = producto.get("ProdImgPublicId") as string | null;
+  const nuevoPublicId = input.ProdImgPublicId;
+
   await producto.update({
     ProdNombre: input.ProdNombre,
     ProdDescripcion: input.ProdDescripcion,
     SubCatID: input.SubCatID,
     ProdEstadoID: input.ProdEstadoID,
     ProdImg: input.ProdImg,
+    ProdImgPublicId: nuevoPublicId,
     EsCombo: input.EsCombo,
     ProdPrecio: input.ProdPrecio,
   });
+
+  if (
+    publicIdAnterior &&
+    publicIdAnterior !== nuevoPublicId &&
+    configureCloudinary()
+  ) {
+    try {
+      await cloudinary.uploader.destroy(publicIdAnterior);
+    } catch (err) {
+      console.error("Cloudinary: error al eliminar imagen anterior", err);
+    }
+  }
+
   await syncRelaciones(producto, input);
   return getProducto(id, false);
 }

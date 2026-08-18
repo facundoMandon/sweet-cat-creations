@@ -57,6 +57,11 @@ Producto.init(
       allowNull: true,
     },
 
+    ProdImgPublicId: {
+      type: DataTypes.STRING(200),
+      allowNull: true,
+    },
+
     EsCombo: {
       type: DataTypes.BOOLEAN,
       allowNull: false,

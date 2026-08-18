@@ -44,7 +44,7 @@ export async function firmarUploadCloudinary(): Promise<{
   folder: string;
   signature: string;
 }> {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/uploads/firma`, {
+  const res = await fetch(`${import.meta.env["VITE_API_URL"]}/api/uploads/firma`, {
     method: "POST",
     credentials: "include",
   });

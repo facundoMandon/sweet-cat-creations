@@ -10,10 +10,12 @@ import {
 import type { Producto } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
 import { DataTable, type Column } from "@/components/admin/data-table";
+import { ImageUploader } from "@/components/admin/image-uploader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 
 export const Route = createFileRoute("/admin/productos")({
   component: AdminProductos,

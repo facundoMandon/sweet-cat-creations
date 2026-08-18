@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Gift, Sparkles, CalendarHeart } from "lucide-react";
 import type { Producto } from "@/lib/types";
 import { formatCurrency } from "@/lib/format";
+import { cloudinaryUrl } from "@/lib/cloudinary";
 import { Badge } from "@/components/ui/badge";
 
 /** Tarjeta de producto kawaii con microinteracciones. */

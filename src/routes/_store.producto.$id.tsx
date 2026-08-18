@@ -99,7 +99,7 @@ function ProductoDetalle() {
           className="relative overflow-hidden rounded-4xl border-2 border-border bg-secondary/30 shadow-kawaii"
         >
           <img
-            src={producto.ProdImg || "/mascot-cat.png"}
+            src={cloudinaryUrl(producto.ProdImgPublicId, producto.ProdImg, "detail", "/mascot-cat.png")}
             alt={producto.ProdNombre}
             className="aspect-square w-full object-cover"
           />

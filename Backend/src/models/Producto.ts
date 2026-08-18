@@ -16,6 +16,7 @@ export class Producto extends Model<
   declare SubCatID: number;
   declare ProdEstadoID: number;
   declare ProdImg: string | null;
+  declare ProdImgPublicId: string | null;
   declare EsCombo: boolean;
   declare ProdPrecio: number;
 

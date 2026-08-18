@@ -31,6 +31,7 @@ import {
   requiredPositiveNumber,
   requiredString,
 } from "../utils/validation.js";
+import { configureCloudinary, cloudinary } from "../config/cloudinary.js";
 
 const SORTS: Record<string, string | string[]> = {
   nombre: "ProdNombre",

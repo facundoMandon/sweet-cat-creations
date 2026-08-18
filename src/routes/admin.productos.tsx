@@ -51,7 +51,7 @@ function AdminProductos() {
       render: (p) => (
         <div className="flex items-center gap-3">
           <img
-            src={p.ProdImg || "/mascot-cat.png"}
+            src={cloudinaryUrl(p.ProdImgPublicId, p.ProdImg, "thumbnail", "/mascot-cat.png")}
             alt=""
             className="size-10 rounded-xl border-2 border-border object-cover"
           />

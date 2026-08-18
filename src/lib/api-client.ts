@@ -6,7 +6,7 @@ import { storageKey } from "@/config";
  * VITE_API_URL debe estar definida (backend real). Ejemplo:
  *   VITE_API_URL=https://api-blackcats.onrender.com
  */
-const API_URL = import.meta.env["VITE_API_URL"] as string | undefined;
+export const API_URL = import.meta.env["VITE_API_URL"] as string | undefined;
 
 if (!API_URL) {
   console.error(

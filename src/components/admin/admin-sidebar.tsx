@@ -88,8 +88,30 @@ export function AdminSidebar() {
           className="border-b-2 border-border bg-card p-4 lg:hidden"
         >
           {nav}
+          <div className="mt-4 flex flex-col gap-2 border-t-2 border-dashed border-border pt-4">
+            {usuario?.nombre ? (
+              <p className="px-2 font-display text-sm font-bold">
+                {usuario.nombre}
+              </p>
+            ) : null}
+            <Link to="/" onClick={() => setOpen(false)}>
+              <Button variant="outline" className="w-full">
+                <Store /> Ver tienda
+              </Button>
+            </Link>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setOpen(false);
+                logout();
+              }}
+            >
+              <LogOut /> Cerrar sesión
+            </Button>
+          </div>
         </motion.div>
       ) : null}
+
 
       {/* Sidebar desktop */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col gap-6 border-r-2 border-border bg-card p-5 lg:flex">

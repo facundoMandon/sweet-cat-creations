@@ -182,8 +182,12 @@ function AdminPedidos() {
         getRowId={(p) => p.PedidoID}
         searchFn={(p, q) =>
           String(p.PedidoID).includes(q) ||
-          (p.cliente?.ClienteNombre ?? "").toLowerCase().includes(q)
+          `${p.cliente?.ClienteNombre ?? ""} ${p.cliente?.ClienteApellido ?? ""}`
+            .toLowerCase()
+            .includes(q) ||
+          (p.cliente?.ClienteTelefono ?? "").toLowerCase().includes(q)
         }
+
         onDelete={async (p) => {
           await orderService.remove(p.PedidoID);
           await borrarCalendar({ data: { pedidoId: p.PedidoID } }).catch(

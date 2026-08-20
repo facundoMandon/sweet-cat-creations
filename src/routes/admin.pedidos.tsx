@@ -96,14 +96,23 @@ function AdminPedidos() {
       key: "cliente",
       header: "Cliente",
       render: (p) => (
-        <div>
-          <p className="font-semibold">{p.cliente?.ClienteNombre}</p>
-          <p className="text-xs text-muted-foreground">
-            {p.cliente?.ClienteTelefono}
-          </p>
-        </div>
+        <span className="font-semibold">
+          {[p.cliente?.ClienteNombre, p.cliente?.ClienteApellido]
+            .filter(Boolean)
+            .join(" ") || "—"}
+        </span>
       ),
     },
+    {
+      key: "telefono",
+      header: "Teléfono",
+      render: (p) => (
+        <span className="text-sm text-muted-foreground">
+          {p.cliente?.ClienteTelefono || "—"}
+        </span>
+      ),
+    },
+
     {
       key: "entrega",
       header: "Entrega",
@@ -173,8 +182,12 @@ function AdminPedidos() {
         getRowId={(p) => p.PedidoID}
         searchFn={(p, q) =>
           String(p.PedidoID).includes(q) ||
-          (p.cliente?.ClienteNombre ?? "").toLowerCase().includes(q)
+          `${p.cliente?.ClienteNombre ?? ""} ${p.cliente?.ClienteApellido ?? ""}`
+            .toLowerCase()
+            .includes(q) ||
+          (p.cliente?.ClienteTelefono ?? "").toLowerCase().includes(q)
         }
+
         onDelete={async (p) => {
           await orderService.remove(p.PedidoID);
           await borrarCalendar({ data: { pedidoId: p.PedidoID } }).catch(

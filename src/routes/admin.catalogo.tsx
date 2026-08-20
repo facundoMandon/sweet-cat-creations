@@ -108,6 +108,7 @@ function CategoriasTable() {
 function SubcategoriasTable() {
   const qc = useQueryClient();
   const { toast } = useToast();
+  const [filtroCat, setFiltroCat] = React.useState<string>("todas");
   const { data, isLoading } = useQuery({
     queryKey: ["subcategorias"],
     queryFn: subcategoryService.list,
@@ -117,6 +118,12 @@ function SubcategoriasTable() {
     queryFn: categoryService.list,
   });
   const refresh = () => qc.invalidateQueries({ queryKey: ["subcategorias"] });
+
+  const rows = React.useMemo(() => {
+    const all = data ?? [];
+    if (filtroCat === "todas") return all;
+    return all.filter((s) => String(s.CatID) === filtroCat);
+  }, [data, filtroCat]);
 
   const columns: Column<SubCategoria>[] = [
     { key: "id", header: "ID", render: (s) => `#${s.SubCatID}` },
@@ -135,33 +142,52 @@ function SubcategoriasTable() {
   ];
 
   return (
-    <DataTable
-      title="Subcategorías"
-      description="Detalle dentro de cada categoría."
-      createLabel="Subcategoría"
-      rows={data ?? []}
-      columns={columns}
-      loading={isLoading}
-      getRowId={(s) => s.SubCatID}
-      searchFn={(s, q) => s.SubCatDescripcion.toLowerCase().includes(q)}
-      onDelete={async (s) => {
-        await subcategoryService.remove(s.SubCatID);
-        toast("Subcategoría eliminada");
-        refresh();
-      }}
-      renderForm={({ row, close }) => (
-        <SubcategoriaForm
-          row={row}
-          categorias={categorias ?? []}
-          onSaved={() => {
-            refresh();
-            close();
-          }}
-        />
-      )}
-    />
+    <div className="flex flex-col gap-4">
+      <div className="w-full max-w-xs">
+        <Field label="Filtrar por categoría">
+          <Select
+            value={filtroCat}
+            onChange={(e) => setFiltroCat(e.target.value)}
+          >
+            <option value="todas">Todas las categorías</option>
+            {(categorias ?? []).map((c) => (
+              <option key={c.CatID} value={String(c.CatID)}>
+                {c.CatDescripcion}
+              </option>
+            ))}
+          </Select>
+        </Field>
+      </div>
+
+      <DataTable
+        title="Subcategorías"
+        description="Detalle dentro de cada categoría."
+        createLabel="Subcategoría"
+        rows={rows}
+        columns={columns}
+        loading={isLoading}
+        getRowId={(s) => s.SubCatID}
+        searchFn={(s, q) => s.SubCatDescripcion.toLowerCase().includes(q)}
+        onDelete={async (s) => {
+          await subcategoryService.remove(s.SubCatID);
+          toast("Subcategoría eliminada");
+          refresh();
+        }}
+        renderForm={({ row, close }) => (
+          <SubcategoriaForm
+            row={row}
+            categorias={categorias ?? []}
+            onSaved={() => {
+              refresh();
+              close();
+            }}
+          />
+        )}
+      />
+    </div>
   );
 }
+
 
 function SubcategoriaForm({
   row,

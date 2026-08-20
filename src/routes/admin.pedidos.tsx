@@ -96,14 +96,23 @@ function AdminPedidos() {
       key: "cliente",
       header: "Cliente",
       render: (p) => (
-        <div>
-          <p className="font-semibold">{p.cliente?.ClienteNombre}</p>
-          <p className="text-xs text-muted-foreground">
-            {p.cliente?.ClienteTelefono}
-          </p>
-        </div>
+        <span className="font-semibold">
+          {[p.cliente?.ClienteNombre, p.cliente?.ClienteApellido]
+            .filter(Boolean)
+            .join(" ") || "—"}
+        </span>
       ),
     },
+    {
+      key: "telefono",
+      header: "Teléfono",
+      render: (p) => (
+        <span className="text-sm text-muted-foreground">
+          {p.cliente?.ClienteTelefono || "—"}
+        </span>
+      ),
+    },
+
     {
       key: "entrega",
       header: "Entrega",

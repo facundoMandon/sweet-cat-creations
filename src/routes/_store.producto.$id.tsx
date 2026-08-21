@@ -72,7 +72,10 @@ function ProductoDetalle() {
   const agotado = producto.ProdEstadoID === 3;
   const relacionados = (todos ?? [])
     .filter(
-      (p) => p.ProdID !== producto.ProdID && p.SubCatID === producto.SubCatID,
+      (p) =>
+        p.ProdID !== producto.ProdID &&
+        p.CatID === producto.CatID &&
+        p.SubCatID === producto.SubCatID,
     )
     .slice(0, 4);
 

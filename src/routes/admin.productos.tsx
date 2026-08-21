@@ -142,7 +142,12 @@ function ProductoForm({
   onSaved,
 }: {
   producto: Producto | null;
-  subcats: { SubCatID: number; SubCatDescripcion: string }[];
+  subcats: {
+    CatID: number;
+    SubCatID: number;
+    SubCatDescripcion: string;
+    categoria?: { CatDescripcion: string } | undefined;
+  }[];
   estados: { ProdEstadoID: number; ProdEstadoDescripcion: string }[];
   eventos: { EventoID: number; EventoNombre: string }[];
   productos: Producto[];
@@ -152,6 +157,7 @@ function ProductoForm({
   const [form, setForm] = React.useState<ProductoInput>({
     ProdNombre: producto?.ProdNombre ?? "",
     ProdDescripcion: producto?.ProdDescripcion ?? "",
+    CatID: producto?.CatID ?? subcats[0]?.CatID ?? 1,
     SubCatID: producto?.SubCatID ?? subcats[0]?.SubCatID ?? 1,
     ProdEstadoID: producto?.ProdEstadoID ?? estados[0]?.ProdEstadoID ?? 1,
     ProdImg: producto?.ProdImg ?? null,
@@ -227,12 +233,20 @@ function ProductoForm({
         </Field>
         <Field label="Subcategoría">
           <Select
-            value={form.SubCatID}
-            onChange={(e) => set("SubCatID", Number(e.target.value))}
+            value={`${form.CatID}-${form.SubCatID}`}
+            onChange={(e) => {
+              const [cat, sub] = e.target.value.split("-").map(Number);
+              setForm((f) => ({ ...f, CatID: cat ?? 1, SubCatID: sub ?? 1 }));
+            }}
           >
             {subcats.map((s) => (
-              <option key={s.SubCatID} value={s.SubCatID}>
-                {s.SubCatDescripcion}
+              <option
+                key={`${s.CatID}-${s.SubCatID}`}
+                value={`${s.CatID}-${s.SubCatID}`}
+              >
+                {s.categoria?.CatDescripcion
+                  ? `${s.categoria.CatDescripcion} / ${s.SubCatDescripcion}`
+                  : s.SubCatDescripcion}
               </option>
             ))}
           </Select>

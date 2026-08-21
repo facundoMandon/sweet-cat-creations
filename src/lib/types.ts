@@ -6,9 +6,10 @@ export interface Categoria {
 }
 
 export interface SubCategoria {
+  // Identidad compuesta: el número reinicia en 1 dentro de cada categoría
+  CatID: number
   SubCatID: number
   SubCatDescripcion: string
-  CatID: number
   categoria?: Categoria | undefined
 }
 
@@ -26,6 +27,7 @@ export interface Producto {
   ProdID: number
   ProdNombre: string
   ProdDescripcion: string | null
+  CatID: number
   SubCatID: number
   ProdEstadoID: number
   ProdImg: string | null

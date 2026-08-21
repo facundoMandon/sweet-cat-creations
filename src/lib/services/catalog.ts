@@ -34,14 +34,15 @@ export const subcategoryService = {
     return unwrap<SubCategoria>(data)
   },
   async update(
-    id: number,
+    catId: number,
+    subCatId: number,
     input: { SubCatDescripcion: string; CatID: number },
   ): Promise<SubCategoria> {
-    const { data } = await api.patch(`/subcategorias/${id}`, input)
+    const { data } = await api.patch(`/subcategorias/${catId}/${subCatId}`, input)
     return unwrap<SubCategoria>(data)
   },
-  async remove(id: number): Promise<void> {
-    await api.delete(`/subcategorias/${id}`)
+  async remove(catId: number, subCatId: number): Promise<void> {
+    await api.delete(`/subcategorias/${catId}/${subCatId}`)
   },
 }
 

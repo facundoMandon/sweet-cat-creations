@@ -77,9 +77,12 @@ function CatalogoPage() {
           (p.ProdDescripcion ?? "").toLowerCase().includes(q),
       );
     }
-    if (search.sub) list = list.filter((p) => p.SubCatID === search.sub);
-    else if (search.cat)
-      list = list.filter((p) => p.subcategoria?.CatID === search.cat);
+    // La subcategoría se identifica por el par (categoría, número).
+    if (search.sub && search.cat)
+      list = list.filter(
+        (p) => p.CatID === search.cat && p.SubCatID === search.sub,
+      );
+    else if (search.cat) list = list.filter((p) => p.CatID === search.cat);
     if (search.evento)
       list = list.filter((p) =>
         (p.eventos ?? []).some((e) => e.EventoID === search.evento),
@@ -149,13 +152,15 @@ function CatalogoPage() {
         <div className="flex flex-wrap gap-2">
           {subsDeCategoria.map((s) => (
             <button
-              key={s.SubCatID}
+              key={`${s.CatID}-${s.SubCatID}`}
               onClick={() =>
-                setFiltro({
-                  sub: search.sub === s.SubCatID ? undefined : s.SubCatID,
-                })
+                setFiltro(
+                  search.sub === s.SubCatID && search.cat === s.CatID
+                    ? { sub: undefined }
+                    : { cat: s.CatID, sub: s.SubCatID },
+                )
               }
-              className={chip(search.sub === s.SubCatID)}
+              className={chip(search.sub === s.SubCatID && search.cat === s.CatID)}
             >
               {s.SubCatDescripcion}
             </button>

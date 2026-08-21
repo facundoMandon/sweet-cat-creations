@@ -38,8 +38,9 @@ export const listSubCategorias = asyncHandler(async (req: Request, res: Response
 });
 
 export const getSubCategoria = asyncHandler(async (req: Request, res: Response) => {
-  const id = requiredId(req.params["id"], "id");
-  res.json({ success: true, data: await service.getSubCategoria(id) });
+  const catId = requiredId(req.params["catId"], "catId");
+  const subCatId = requiredId(req.params["subCatId"], "subCatId");
+  res.json({ success: true, data: await service.getSubCategoria(catId, subCatId) });
 });
 
 export const createSubCategoria = asyncHandler(async (req: Request, res: Response) => {
@@ -48,14 +49,16 @@ export const createSubCategoria = asyncHandler(async (req: Request, res: Respons
 });
 
 export const updateSubCategoria = asyncHandler(async (req: Request, res: Response) => {
-  const id = requiredId(req.params["id"], "id");
-  const data = await service.updateSubCategoria(id, req.body ?? {});
+  const catId = requiredId(req.params["catId"], "catId");
+  const subCatId = requiredId(req.params["subCatId"], "subCatId");
+  const data = await service.updateSubCategoria(catId, subCatId, req.body ?? {});
   res.json({ success: true, data });
 });
 
 export const deleteSubCategoria = asyncHandler(async (req: Request, res: Response) => {
-  const id = requiredId(req.params["id"], "id");
-  await service.deleteSubCategoria(id);
+  const catId = requiredId(req.params["catId"], "catId");
+  const subCatId = requiredId(req.params["subCatId"], "subCatId");
+  await service.deleteSubCategoria(catId, subCatId);
   res.json({ success: true });
 });
 

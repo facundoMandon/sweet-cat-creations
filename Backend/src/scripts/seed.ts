@@ -111,13 +111,20 @@ async function seedCatalogo(): Promise<void> {
       where: { CatDescripcion: p.categoria },
       defaults: { CatDescripcion: p.categoria } as never,
     });
-    const [subcategoria] = await SubCategoria.findOrCreate({
+    // El número de subcategoría se asigna por categoría (reinicia en 1).
+    let subcategoria = await SubCategoria.findOne({
       where: { SubCatDescripcion: p.subcategoria, CatID: categoria.CatID },
-      defaults: {
-        SubCatDescripcion: p.subcategoria,
-        CatID: categoria.CatID,
-      } as never,
     });
+    if (!subcategoria) {
+      const max = (await SubCategoria.max("SubCatID", {
+        where: { CatID: categoria.CatID },
+      })) as number | null;
+      subcategoria = await SubCategoria.create({
+        CatID: categoria.CatID,
+        SubCatID: (max ?? 0) + 1,
+        SubCatDescripcion: p.subcategoria,
+      } as never);
+    }
 
     const existente = await Producto.findOne({
       where: { ProdNombre: p.nombre },
@@ -129,6 +136,7 @@ async function seedCatalogo(): Promise<void> {
     await Producto.create({
       ProdNombre: p.nombre,
       ProdDescripcion: p.descripcion,
+      CatID: categoria.CatID,
       SubCatID: subcategoria.SubCatID,
       ProdEstadoID: activoId,
       ProdImg: null,

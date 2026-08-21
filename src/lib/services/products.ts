@@ -4,6 +4,7 @@ import type { Producto } from '../types'
 export interface ProductoInput {
   ProdNombre: string
   ProdDescripcion: string | null
+  CatID: number
   SubCatID: number
   ProdEstadoID: number
   ProdImg: string | null

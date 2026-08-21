@@ -1,4 +1,5 @@
-import { Op } from "sequelize";
+import { Op, type Transaction } from "sequelize";
+import { sequelize } from "../config/database.js";
 import {
   Categoria,
   SubCategoria,
@@ -61,20 +62,37 @@ export async function deleteCategoria(id: number) {
 }
 
 /* ----------------------------- Subcategorías ----------------------------- */
+/**
+ * La identidad de una subcategoría es el par (CatID, SubCatID). El número
+ * reinicia en 1 dentro de cada categoría.
+ */
+
+/** Próximo número libre dentro de la categoría. Requiere transacción. */
+async function nextSubCatID(CatID: number, transaction: Transaction): Promise<number> {
+  const max = (await SubCategoria.max("SubCatID", {
+    where: { CatID },
+    transaction,
+  })) as number | null;
+  return (max ?? 0) + 1;
+}
 
 export async function listSubCategorias(query: Record<string, unknown>) {
   const where = query["catId"] ? { CatID: requiredId(query["catId"], "catId") } : {};
   return toJSON(
     await SubCategoria.findAll({
       where,
-      order: [["SubCatDescripcion", "ASC"]],
+      order: [
+        ["CatID", "ASC"],
+        ["SubCatID", "ASC"],
+      ],
       include: [{ model: Categoria, as: "categoria" }],
     })
   );
 }
 
-export async function getSubCategoria(id: number) {
-  const row = await SubCategoria.findByPk(id, {
+export async function getSubCategoria(catId: number, subCatId: number) {
+  const row = await SubCategoria.findOne({
+    where: { CatID: catId, SubCatID: subCatId },
     include: [{ model: Categoria, as: "categoria" }],
   });
   if (!row) throw notFound("Subcategoría no encontrada");
@@ -88,28 +106,95 @@ export async function createSubCategoria(body: Record<string, unknown>) {
     100
   );
   const CatID = requiredId(body["CatID"], "CatID");
-  if (!(await Categoria.findByPk(CatID))) throw notFound("La categoría no existe");
-  return toJSON(await SubCategoria.create({ SubCatDescripcion, CatID } as never));
+
+  return sequelize.transaction(async (transaction) => {
+    // Bloqueamos la categoría para serializar la asignación del número.
+    const categoria = await Categoria.findByPk(CatID, {
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!categoria) throw notFound("La categoría no existe");
+
+    const dup = await SubCategoria.findOne({
+      where: { CatID, SubCatDescripcion },
+      transaction,
+    });
+    if (dup) throw conflict("Ya existe una subcategoría con esa descripción en la categoría");
+
+    const SubCatID = await nextSubCatID(CatID, transaction);
+    const creada = await SubCategoria.create(
+      { CatID, SubCatID, SubCatDescripcion } as never,
+      { transaction }
+    );
+    return toJSON(creada);
+  });
 }
 
-export async function updateSubCategoria(id: number, body: Record<string, unknown>) {
-  const row = await SubCategoria.findByPk(id);
-  if (!row) throw notFound("Subcategoría no encontrada");
+export async function updateSubCategoria(
+  catId: number,
+  subCatId: number,
+  body: Record<string, unknown>
+) {
   const SubCatDescripcion = requiredString(
     body["SubCatDescripcion"],
     "SubCatDescripcion",
     100
   );
-  const CatID = requiredId(body["CatID"], "CatID");
-  if (!(await Categoria.findByPk(CatID))) throw notFound("La categoría no existe");
-  await row.update({ SubCatDescripcion, CatID });
-  return toJSON(row);
+  const nuevoCatID = body["CatID"] === undefined ? catId : requiredId(body["CatID"], "CatID");
+
+  return sequelize.transaction(async (transaction) => {
+    const row = await SubCategoria.findOne({
+      where: { CatID: catId, SubCatID: subCatId },
+      transaction,
+    });
+    if (!row) throw notFound("Subcategoría no encontrada");
+
+    const categoria = await Categoria.findByPk(nuevoCatID, {
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!categoria) throw notFound("La categoría no existe");
+
+    const dup = await SubCategoria.findOne({
+      where: {
+        CatID: nuevoCatID,
+        SubCatDescripcion,
+        [Op.not]: { CatID: catId, SubCatID: subCatId },
+      },
+      transaction,
+    });
+    if (dup) throw conflict("Ya existe una subcategoría con esa descripción en la categoría");
+
+    // Mismo padre: sólo cambia la descripción.
+    if (nuevoCatID === catId) {
+      await row.update({ SubCatDescripcion }, { transaction });
+      return toJSON(row);
+    }
+
+    // Cambio de categoría: se le asigna un número nuevo en la categoría destino
+    // y se reapuntan los productos.
+    const nuevoSubCatID = await nextSubCatID(nuevoCatID, transaction);
+    const creada = await SubCategoria.create(
+      { CatID: nuevoCatID, SubCatID: nuevoSubCatID, SubCatDescripcion } as never,
+      { transaction }
+    );
+    await Producto.update(
+      { CatID: nuevoCatID, SubCatID: nuevoSubCatID },
+      { where: { CatID: catId, SubCatID: subCatId }, transaction }
+    );
+    await row.destroy({ transaction });
+    return toJSON(creada);
+  });
 }
 
-export async function deleteSubCategoria(id: number) {
-  const row = await SubCategoria.findByPk(id);
+export async function deleteSubCategoria(catId: number, subCatId: number) {
+  const row = await SubCategoria.findOne({
+    where: { CatID: catId, SubCatID: subCatId },
+  });
   if (!row) throw notFound("Subcategoría no encontrada");
-  const productos = await Producto.count({ where: { SubCatID: id } });
+  const productos = await Producto.count({
+    where: { CatID: catId, SubCatID: subCatId },
+  });
   if (productos > 0) {
     throw conflict("No se puede eliminar: hay productos asociados a esta subcategoría");
   }

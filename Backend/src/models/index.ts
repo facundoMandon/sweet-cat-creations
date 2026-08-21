@@ -43,17 +43,21 @@ SubCategoria.belongsTo(Categoria, {
 });
 
 // =========================
-// SubCategoria - Producto
+// Categoria - Producto
 // =========================
+// La subcategoría de un producto se identifica por el par (CatID, SubCatID).
+// Sequelize no soporta claves foráneas compuestas en asociaciones, por lo que
+// el producto se asocia a la categoría y la subcategoría se resuelve en el
+// servicio a partir del par.
 
-SubCategoria.hasMany(Producto, {
-  foreignKey: "SubCatID",
+Categoria.hasMany(Producto, {
+  foreignKey: "CatID",
   as: "productos",
 });
 
-Producto.belongsTo(SubCategoria, {
-  foreignKey: "SubCatID",
-  as: "subcategoria",
+Producto.belongsTo(Categoria, {
+  foreignKey: "CatID",
+  as: "categoria",
 });
 
 // =========================

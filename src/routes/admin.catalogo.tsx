@@ -126,7 +126,11 @@ function SubcategoriasTable() {
   }, [data, filtroCat]);
 
   const columns: Column<SubCategoria>[] = [
-    { key: "id", header: "ID", render: (s) => `#${s.SubCatID}` },
+    {
+      key: "id",
+      header: "ID",
+      render: (s) => `${s.CatID}.${s.SubCatID}`,
+    },
     {
       key: "desc",
       header: "Descripción",
@@ -166,10 +170,10 @@ function SubcategoriasTable() {
         rows={rows}
         columns={columns}
         loading={isLoading}
-        getRowId={(s) => s.SubCatID}
+        getRowId={(s) => `${s.CatID}-${s.SubCatID}`}
         searchFn={(s, q) => s.SubCatDescripcion.toLowerCase().includes(q)}
         onDelete={async (s) => {
-          await subcategoryService.remove(s.SubCatID);
+          await subcategoryService.remove(s.CatID, s.SubCatID);
           toast("Subcategoría eliminada");
           refresh();
         }}
@@ -209,7 +213,7 @@ function SubcategoriaForm({
       onSubmit={async (e) => {
         e.preventDefault();
         const input = { SubCatDescripcion: desc, CatID: catId };
-        if (row) await subcategoryService.update(row.SubCatID, input);
+        if (row) await subcategoryService.update(row.CatID, row.SubCatID, input);
         else await subcategoryService.create(input);
         toast("Subcategoría guardada");
         onSaved();

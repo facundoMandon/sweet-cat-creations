@@ -1,4 +1,5 @@
-import { Op } from "sequelize";
+import { Op, type Transaction } from "sequelize";
+import { sequelize } from "../config/database.js";
 import {
   Categoria,
   SubCategoria,

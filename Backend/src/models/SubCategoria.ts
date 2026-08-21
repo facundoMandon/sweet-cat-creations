@@ -1,15 +1,7 @@
-import {
-  Model,
-  DataTypes,
-  InferAttributes,
-  InferCreationAttributes,
-} from "sequelize";
+import { Model, DataTypes, InferAttributes, InferCreationAttributes } from "sequelize";
 import { sequelize } from "../config/database.js";
 
-export class SubCategoria extends Model<
-  InferAttributes<SubCategoria>,
-  InferCreationAttributes<SubCategoria>
-> {
+export class SubCategoria extends Model<InferAttributes<SubCategoria>, InferCreationAttributes<SubCategoria>> {
   declare SubCatID: number;
   declare SubCatDescripcion: string;
   declare CatID: number;
@@ -31,11 +23,12 @@ SubCategoria.init(
     CatID: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      primaryKey: true,
     },
   },
   {
     sequelize,
     tableName: "subcategorias",
     timestamps: false,
-  }
+  },
 );

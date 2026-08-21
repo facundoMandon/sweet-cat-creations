@@ -174,6 +174,7 @@ export async function getProducto(
 interface ProductoInput {
   ProdNombre: string;
   ProdDescripcion: string | null;
+  CatID: number;
   SubCatID: number;
   ProdEstadoID: number;
   ProdImg: string | null;
@@ -188,6 +189,7 @@ async function parseProductoInput(body: Record<string, unknown>): Promise<Produc
   const input: ProductoInput = {
     ProdNombre: requiredString(body["ProdNombre"], "ProdNombre", 150),
     ProdDescripcion: optionalString(body["ProdDescripcion"], "ProdDescripcion", 2000),
+    CatID: requiredId(body["CatID"], "CatID"),
     SubCatID: requiredId(body["SubCatID"], "SubCatID"),
     ProdEstadoID: requiredId(body["ProdEstadoID"], "ProdEstadoID"),
     ProdImg: optionalString(body["ProdImg"], "ProdImg", 500),
@@ -202,8 +204,11 @@ async function parseProductoInput(body: Record<string, unknown>): Promise<Produc
       : requiredIdArray(body["itemIds"], "itemIds"),
   };
 
-  if (!(await SubCategoria.findByPk(input.SubCatID))) {
-    throw notFound("La subcategoría indicada no existe");
+  const subcat = await SubCategoria.findOne({
+    where: { CatID: input.CatID, SubCatID: input.SubCatID },
+  });
+  if (!subcat) {
+    throw notFound("La subcategoría indicada no existe en esa categoría");
   }
   if (!(await ProdEstado.findByPk(input.ProdEstadoID))) {
     throw notFound("El estado de producto indicado no existe");
@@ -249,6 +254,7 @@ export async function createProducto(
   const producto = await Producto.create({
     ProdNombre: input.ProdNombre,
     ProdDescripcion: input.ProdDescripcion,
+    CatID: input.CatID,
     SubCatID: input.SubCatID,
     ProdEstadoID: input.ProdEstadoID,
     ProdImg: input.ProdImg,
@@ -274,6 +280,7 @@ export async function updateProducto(
   await producto.update({
     ProdNombre: input.ProdNombre,
     ProdDescripcion: input.ProdDescripcion,
+    CatID: input.CatID,
     SubCatID: input.SubCatID,
     ProdEstadoID: input.ProdEstadoID,
     ProdImg: input.ProdImg,

@@ -16,10 +16,10 @@ categoriaRouter.delete('/:id', requireAuth, requireAdmin, catalogoCtrl.deleteCat
 /* ----------------------------- Subcategorías ----------------------------- */
 export const subCategoriaRouter = Router();
 subCategoriaRouter.get('/', catalogoCtrl.listSubCategorias);
-subCategoriaRouter.get('/:id', catalogoCtrl.getSubCategoria);
+subCategoriaRouter.get('/:catId/:subCatId', catalogoCtrl.getSubCategoria);
 subCategoriaRouter.post('/', requireAuth, requireAdmin, catalogoCtrl.createSubCategoria); 
-subCategoriaRouter.patch('/:id', requireAuth, requireAdmin, catalogoCtrl.updateSubCategoria);
-subCategoriaRouter.delete('/:id', requireAuth, requireAdmin, catalogoCtrl.deleteSubCategoria);
+subCategoriaRouter.patch('/:catId/:subCatId', requireAuth, requireAdmin, catalogoCtrl.updateSubCategoria);
+subCategoriaRouter.delete('/:catId/:subCatId', requireAuth, requireAdmin, catalogoCtrl.deleteSubCategoria);
 
 /* -------------------------------- Eventos -------------------------------- */
 export const eventoRouter = Router();

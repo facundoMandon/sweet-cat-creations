@@ -13,6 +13,7 @@ export class Producto extends Model<
   declare ProdID: number;
   declare ProdNombre: string;
   declare ProdDescripcion: string | null;
+  declare CatID: number;
   declare SubCatID: number;
   declare ProdEstadoID: number;
   declare ProdImg: string | null;
@@ -40,6 +41,11 @@ Producto.init(
     ProdDescripcion: {
       type: DataTypes.TEXT,
       allowNull: true,
+    },
+
+    CatID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
 
     SubCatID: {

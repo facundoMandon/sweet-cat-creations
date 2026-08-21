@@ -41,11 +41,7 @@ const SORTS: Record<string, string | string[]> = {
 };
 
 const includes = () => [
-  {
-    model: SubCategoria,
-    as: "subcategoria",
-    include: [{ model: Categoria, as: "categoria" }],
-  },
+  { model: Categoria, as: "categoria" },
   { model: ProdEstado, as: "estado" },
   { model: Evento, as: "eventos", through: { attributes: [] } },
   {
@@ -55,6 +51,38 @@ const includes = () => [
     include: [{ model: ProdEstado, as: "estado" }],
   },
 ];
+
+interface ProductoJSON extends Record<string, unknown> {
+  CatID: number;
+  SubCatID: number;
+  categoria?: unknown;
+}
+
+/**
+ * Adjunta la subcategoría a cada producto resolviendo el par (CatID, SubCatID).
+ * Sequelize no soporta claves foráneas compuestas en asociaciones, así que la
+ * relación se completa acá con una única consulta extra.
+ */
+async function attachSubcategorias<T>(data: T): Promise<T> {
+  const rows = (Array.isArray(data) ? data : [data]) as ProductoJSON[];
+  const pares = rows
+    .filter((r) => r && r.CatID != null && r.SubCatID != null)
+    .map((r) => ({ CatID: r.CatID, SubCatID: r.SubCatID }));
+  if (!pares.length) return data;
+
+  const subcats = await SubCategoria.findAll({
+    where: { [Op.or]: pares },
+    include: [{ model: Categoria, as: "categoria" }],
+  });
+  const mapa = new Map<string, unknown>();
+  for (const s of toJSON<Array<Record<string, unknown>>>(subcats)) {
+    mapa.set(`${s["CatID"]}-${s["SubCatID"]}`, s);
+  }
+  for (const r of rows) {
+    r["subcategoria"] = mapa.get(`${r.CatID}-${r.SubCatID}`) ?? null;
+  }
+  return data;
+}
 
 export interface ProductoQuery extends Record<string, unknown> {
   q?: string;
@@ -93,6 +121,10 @@ export async function listProductos(
     and.push({ ProdEstadoID: estadoId });
   }
 
+  const catId = optionalId(query.catId, "catId");
+  if (catId) and.push({ CatID: catId });
+
+  // El número de subcategoría sólo tiene sentido dentro de una categoría.
   const subCatId = optionalId(query.subCatId, "subCatId");
   if (subCatId) and.push({ SubCatID: subCatId });
 
@@ -102,12 +134,6 @@ export async function listProductos(
   if (and.length) Object.assign(where, { [Op.and]: and });
 
   const include = includes().map((inc) => ({ ...inc }));
-
-  const catId = optionalId(query.catId, "catId");
-  if (catId) {
-    (include[0] as Record<string, unknown>)["required"] = true;
-    (include[0] as Record<string, unknown>)["where"] = { CatID: catId };
-  }
 
   const eventoId = optionalId(query.eventoId, "eventoId");
   if (eventoId) {
@@ -125,7 +151,8 @@ export async function listProductos(
   };
 
   const { rows, count } = await Producto.findAndCountAll(options);
-  return paginated(toJSON<unknown[]>(rows), count, page);
+  const data = await attachSubcategorias(toJSON<unknown[]>(rows));
+  return paginated(data, count, page);
 }
 
 export async function getProducto(
@@ -140,8 +167,9 @@ export async function getProducto(
       throw notFound("Producto no encontrado");
     }
   }
-  return toJSON(producto);
+  return attachSubcategorias(toJSON<Record<string, unknown>>(producto));
 }
+
 
 interface ProductoInput {
   ProdNombre: string;

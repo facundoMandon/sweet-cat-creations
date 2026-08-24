@@ -63,11 +63,9 @@ function RecuperarPage() {
                 <p className="text-xs text-muted-foreground">
                   Revisá también la carpeta de spam. El enlace vence en 1 hora.
                 </p>
-                <Button asChild variant="secondary" className="mt-2">
-                  <Link to="/login" search={{}}>
-                    Volver a ingresar
-                  </Link>
-                </Button>
+                <Link to="/login" search={{}} className="mt-2">
+                  <Button variant="secondary">Volver a ingresar</Button>
+                </Link>
               </div>
             ) : (
               <form onSubmit={submit} className="flex flex-col gap-4">

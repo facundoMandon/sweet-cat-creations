@@ -11,6 +11,7 @@ import { PedidoEstado } from "./PedidoEstado.js";
 import { Pedido } from "./Pedido.js";
 import { ProductoPedido } from "./ProductoPedido.js";
 import { Notificacion } from "./Notificacion.js";
+import { PasswordReset } from "./PasswordReset.js";
 
 // =========================
 // Usuario - Cliente (1:1)

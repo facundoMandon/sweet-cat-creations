@@ -64,7 +64,7 @@ Usuario.init(
     },
     UsuarioContraseniaHash: {
       type: DataTypes.STRING(256),
-      allowNull: false,
+      allowNull: true,
     },
     Rol: {
       type: DataTypes.ENUM("admin", "cliente"),
@@ -75,6 +75,25 @@ Usuario.init(
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
+    },
+    AuthProveedor: {
+      type: DataTypes.ENUM("local", "google", "ambos"),
+      allowNull: false,
+      defaultValue: "local",
+    },
+    GoogleSub: {
+      type: DataTypes.STRING(64),
+      allowNull: true,
+      unique: true,
+    },
+    EmailVerificado: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    AvatarURL: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
     },
     createdAt: {
       type: DataTypes.DATE,

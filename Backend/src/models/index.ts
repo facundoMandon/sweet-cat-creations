@@ -184,6 +184,21 @@ Notificacion.belongsTo(Pedido, {
   as: "pedido",
 });
 
+// =========================
+// Usuario - PasswordReset
+// =========================
+
+Usuario.hasMany(PasswordReset, {
+  foreignKey: "UsuarioID",
+  as: "passwordResets",
+  onDelete: "CASCADE",
+});
+
+PasswordReset.belongsTo(Usuario, {
+  foreignKey: "UsuarioID",
+  as: "usuario",
+});
+
 export {
   Categoria,
   SubCategoria,
@@ -198,4 +213,5 @@ export {
   Pedido,
   ProductoPedido,
   Notificacion,
+  PasswordReset,
 };

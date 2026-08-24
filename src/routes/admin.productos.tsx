@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { productService, type ProductoInput } from "@/lib/services/products";
 import {
+  categoryService,
   subcategoryService,
   prodEstadoService,
   eventoService,
@@ -28,6 +29,10 @@ function AdminProductos() {
   const { data: productos, isLoading } = useQuery({
     queryKey: ["productos"],
     queryFn: productService.list,
+  });
+  const { data: cats } = useQuery({
+    queryKey: ["categorias"],
+    queryFn: categoryService.list,
   });
   const { data: subcats } = useQuery({
     queryKey: ["subcategorias"],
@@ -135,6 +140,7 @@ function AdminProductos() {
 
 function ProductoForm({
   producto,
+  categorias,
   subcats,
   estados,
   eventos,
@@ -142,6 +148,7 @@ function ProductoForm({
   onSaved,
 }: {
   producto: Producto | null;
+  categorias: { CatID: number; CatDescripcion: string }[];
   subcats: {
     CatID: number;
     SubCatID: number;
@@ -168,6 +175,12 @@ function ProductoForm({
     itemIds: (producto?.itemsCombo ?? []).map((p) => p.ProdID),
   });
   const [guardando, setGuardando] = React.useState(false);
+
+  /** Subcategorías de la categoría elegida (dependen una de la otra). */
+  const subcatsDeCategoria = React.useMemo(
+    () => subcats.filter((s) => s.CatID === form.CatID),
+    [subcats, form.CatID],
+  );
 
   const set = <K extends keyof ProductoInput>(k: K, v: ProductoInput[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -332,6 +345,17 @@ function ProductoForm({
           </div>
         </Field>
       ) : null}
+
+      <Field label="Imagen" hint="Lo último: subí la foto del producto.">
+        <ImageUploader
+          imageUrl={form.ProdImg}
+          publicId={form.ProdImgPublicId}
+          onChange={(url, publicId) => {
+            set("ProdImg", url);
+            set("ProdImgPublicId", publicId);
+          }}
+        />
+      </Field>
 
       <Button type="submit" disabled={guardando} className="mt-2">
         {guardando ? "Guardando..." : producto ? "Guardar cambios" : "Crear producto"}

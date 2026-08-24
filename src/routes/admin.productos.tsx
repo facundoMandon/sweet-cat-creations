@@ -221,36 +221,6 @@ function ProductoForm({
             onChange={(e) => set("ProdPrecio", Number(e.target.value))}
           />
         </Field>
-        <Field label="Imagen">
-          <ImageUploader
-            imageUrl={form.ProdImg}
-            publicId={form.ProdImgPublicId}
-            onChange={(url, publicId) => {
-              set("ProdImg", url);
-              set("ProdImgPublicId", publicId);
-            }}
-          />
-        </Field>
-        <Field label="Subcategoría">
-          <Select
-            value={`${form.CatID}-${form.SubCatID}`}
-            onChange={(e) => {
-              const [cat, sub] = e.target.value.split("-").map(Number);
-              setForm((f) => ({ ...f, CatID: cat ?? 1, SubCatID: sub ?? 1 }));
-            }}
-          >
-            {subcats.map((s) => (
-              <option
-                key={`${s.CatID}-${s.SubCatID}`}
-                value={`${s.CatID}-${s.SubCatID}`}
-              >
-                {s.categoria?.CatDescripcion
-                  ? `${s.categoria.CatDescripcion} / ${s.SubCatDescripcion}`
-                  : s.SubCatDescripcion}
-              </option>
-            ))}
-          </Select>
-        </Field>
         <Field label="Estado">
           <Select
             value={form.ProdEstadoID}
@@ -259,6 +229,46 @@ function ProductoForm({
             {estados.map((s) => (
               <option key={s.ProdEstadoID} value={s.ProdEstadoID}>
                 {s.ProdEstadoDescripcion}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Categoría">
+          <Select
+            value={form.CatID}
+            onChange={(e) => {
+              const cat = Number(e.target.value);
+              // Al cambiar de categoría se reposiciona la subcategoría en la
+              // primera disponible de esa categoría (clave compuesta).
+              const primera = subcats.find((s) => s.CatID === cat);
+              setForm((f) => ({
+                ...f,
+                CatID: cat,
+                SubCatID: primera?.SubCatID ?? 1,
+              }));
+            }}
+          >
+            {categorias.map((c) => (
+              <option key={c.CatID} value={c.CatID}>
+                {c.CatDescripcion}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field
+          label="Subcategoría"
+          {...(subcatsDeCategoria.length === 0
+            ? { hint: "Esta categoría todavía no tiene subcategorías." }
+            : {})}
+        >
+          <Select
+            value={form.SubCatID}
+            onChange={(e) => set("SubCatID", Number(e.target.value))}
+            disabled={subcatsDeCategoria.length === 0}
+          >
+            {subcatsDeCategoria.map((s) => (
+              <option key={`${s.CatID}-${s.SubCatID}`} value={s.SubCatID}>
+                {s.SubCatDescripcion}
               </option>
             ))}
           </Select>

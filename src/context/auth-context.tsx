@@ -21,6 +21,7 @@ interface AuthContextValue {
     telefono?: string
     direccion?: string
   }) => Promise<Usuario>
+  loginWithGoogle: (credential: string) => Promise<Usuario>
   logout: () => Promise<void>
   refresh: () => Promise<void>
 }
@@ -89,6 +90,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return usuario
   }
 
+  const loginWithGoogle = async (credential: string) => {
+    const { token, usuario } = await authService.loginWithGoogle(credential)
+    persist(usuario, token)
+    return usuario
+  }
+
   const logout = async () => {
     await authService.logout()
     persist(null, null)
@@ -107,6 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAdmin: usuario?.rol === 'admin',
     login,
     register,
+    loginWithGoogle,
     logout,
     refresh: refreshSession,
 

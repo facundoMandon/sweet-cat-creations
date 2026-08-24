@@ -55,6 +55,33 @@ export const authService = {
     return data
   },
 
+  /** Login/registro con una cuenta de Google (id_token verificado en la API). */
+  async loginWithGoogle(credential: string): Promise<AuthResult> {
+    const { data } = await authApi.post<AuthResult>('/google', {
+      idToken: credential,
+    })
+    setToken(data.token)
+    return data
+  },
+
+  /** Pide el email de recupero. La respuesta es siempre genérica. */
+  async forgotPassword(email: string): Promise<string> {
+    const { data } = await authApi.post<{ success: boolean; message: string }>(
+      '/forgot-password',
+      { email },
+    )
+    return data.message
+  },
+
+  /** Fija una nueva contraseña usando el token recibido por email. */
+  async resetPassword(token: string, password: string): Promise<string> {
+    const { data } = await authApi.post<{ success: boolean; message: string }>(
+      '/reset-password',
+      { token, password },
+    )
+    return data.message
+  },
+
   /** Renueva el access token usando la cookie httpOnly de refresh. */
   async refresh(): Promise<AuthResult> {
     const { data } = await authApi.post<AuthResult>('/refresh')

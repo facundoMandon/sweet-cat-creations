@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { LogIn, UserPlus } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
+import { GoogleSignInButton } from "@/components/google-signin-button";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/_store/login")({
 
 function LoginPage() {
   const { next } = Route.useSearch();
-  const { login, register } = useAuth();
+  const { login, register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -80,6 +81,22 @@ function LoginPage() {
       else navigate({ to: "/" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "No pudimos ingresar");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const entrarConGoogle = async (credential: string) => {
+    setError("");
+    setCargando(true);
+    try {
+      const usuario = await loginWithGoogle(credential);
+      toast(`¡Hola, ${usuario.nombre}!`);
+      if (usuario.rol === "admin") navigate({ to: "/admin" });
+      else if (next === "/pedidos") navigate({ to: "/pedidos" });
+      else navigate({ to: "/" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No pudimos ingresar con Google");
     } finally {
       setCargando(false);
     }
@@ -213,6 +230,31 @@ function LoginPage() {
                     : "Crear cuenta"}
               </Button>
             </form>
+
+            {modo === "login" ? (
+              <p className="mt-3 text-center text-sm">
+                <Link
+                  to="/recuperar"
+                  className="font-semibold text-muted-foreground hover:text-primary"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </p>
+            ) : null}
+
+            <div className="my-5 flex items-center gap-3">
+              <span className="h-px flex-1 bg-border" />
+              <span className="text-xs font-bold uppercase text-muted-foreground">
+                o
+              </span>
+              <span className="h-px flex-1 bg-border" />
+            </div>
+
+            <GoogleSignInButton
+              onCredential={entrarConGoogle}
+              onError={setError}
+              disabled={cargando}
+            />
 
             {brand.features.demoCredentials && content.demo ? (
               <div className="mt-5 rounded-2xl bg-secondary/40 p-4 text-xs">

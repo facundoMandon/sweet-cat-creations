@@ -17,6 +17,8 @@ import { Route as StoreCatalogoRouteImport } from './routes/_store.catalogo'
 import { Route as StoreCheckoutRouteImport } from './routes/_store.checkout'
 import { Route as StoreLoginRouteImport } from './routes/_store.login'
 import { Route as StorePedidosRouteImport } from './routes/_store.pedidos'
+import { Route as StoreRecuperarRouteImport } from './routes/_store.recuperar'
+import { Route as StoreRestablecerRouteImport } from './routes/_store.restablecer'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminCalendarioRouteImport } from './routes/admin.calendario'
 import { Route as AdminCatalogoRouteImport } from './routes/admin.catalogo'
@@ -64,6 +66,16 @@ const StoreLoginRoute = StoreLoginRouteImport.update({
 const StorePedidosRoute = StorePedidosRouteImport.update({
   id: '/pedidos',
   path: '/pedidos',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreRecuperarRoute = StoreRecuperarRouteImport.update({
+  id: '/recuperar',
+  path: '/recuperar',
+  getParentRoute: () => StoreRoute,
+} as any)
+const StoreRestablecerRoute = StoreRestablecerRouteImport.update({
+  id: '/restablecer',
+  path: '/restablecer',
   getParentRoute: () => StoreRoute,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -120,6 +132,8 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof StoreCheckoutRoute
   '/login': typeof StoreLoginRoute
   '/pedidos': typeof StorePedidosRoute
+  '/recuperar': typeof StoreRecuperarRoute
+  '/restablecer': typeof StoreRestablecerRoute
   '/admin/calendario': typeof AdminCalendarioRoute
   '/admin/catalogo': typeof AdminCatalogoRoute
   '/admin/clientes': typeof AdminClientesRoute
@@ -136,6 +150,8 @@ export interface FileRoutesByTo {
   '/checkout': typeof StoreCheckoutRoute
   '/login': typeof StoreLoginRoute
   '/pedidos': typeof StorePedidosRoute
+  '/recuperar': typeof StoreRecuperarRoute
+  '/restablecer': typeof StoreRestablecerRoute
   '/admin/calendario': typeof AdminCalendarioRoute
   '/admin/catalogo': typeof AdminCatalogoRoute
   '/admin/clientes': typeof AdminClientesRoute
@@ -156,6 +172,8 @@ export interface FileRoutesById {
   '/_store/checkout': typeof StoreCheckoutRoute
   '/_store/login': typeof StoreLoginRoute
   '/_store/pedidos': typeof StorePedidosRoute
+  '/_store/recuperar': typeof StoreRecuperarRoute
+  '/_store/restablecer': typeof StoreRestablecerRoute
   '/admin/calendario': typeof AdminCalendarioRoute
   '/admin/catalogo': typeof AdminCatalogoRoute
   '/admin/clientes': typeof AdminClientesRoute
@@ -177,6 +195,8 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/pedidos'
+    | '/recuperar'
+    | '/restablecer'
     | '/admin/calendario'
     | '/admin/catalogo'
     | '/admin/clientes'
@@ -193,6 +213,8 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/login'
     | '/pedidos'
+    | '/recuperar'
+    | '/restablecer'
     | '/admin/calendario'
     | '/admin/catalogo'
     | '/admin/clientes'
@@ -212,6 +234,8 @@ export interface FileRouteTypes {
     | '/_store/checkout'
     | '/_store/login'
     | '/_store/pedidos'
+    | '/_store/recuperar'
+    | '/_store/restablecer'
     | '/admin/calendario'
     | '/admin/catalogo'
     | '/admin/clientes'
@@ -287,6 +311,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StorePedidosRouteImport
       parentRoute: typeof StoreRoute
     }
+    '/_store/recuperar': {
+      id: '/_store/recuperar'
+      path: '/recuperar'
+      fullPath: '/recuperar'
+      preLoaderRoute: typeof StoreRecuperarRouteImport
+      parentRoute: typeof StoreRoute
+    }
+    '/_store/restablecer': {
+      id: '/_store/restablecer'
+      path: '/restablecer'
+      fullPath: '/restablecer'
+      preLoaderRoute: typeof StoreRestablecerRouteImport
+      parentRoute: typeof StoreRoute
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -359,6 +397,8 @@ interface StoreRouteChildren {
   StoreCheckoutRoute: typeof StoreCheckoutRoute
   StoreLoginRoute: typeof StoreLoginRoute
   StorePedidosRoute: typeof StorePedidosRoute
+  StoreRecuperarRoute: typeof StoreRecuperarRoute
+  StoreRestablecerRoute: typeof StoreRestablecerRoute
   StoreIndexRoute: typeof StoreIndexRoute
   StoreProductoIdRoute: typeof StoreProductoIdRoute
 }
@@ -369,6 +409,8 @@ const StoreRouteChildren: StoreRouteChildren = {
   StoreCheckoutRoute: StoreCheckoutRoute,
   StoreLoginRoute: StoreLoginRoute,
   StorePedidosRoute: StorePedidosRoute,
+  StoreRecuperarRoute: StoreRecuperarRoute,
+  StoreRestablecerRoute: StoreRestablecerRoute,
   StoreIndexRoute: StoreIndexRoute,
   StoreProductoIdRoute: StoreProductoIdRoute,
 }

@@ -73,6 +73,15 @@ export const content: ContentConfig = {
       description:
         "Ingresá a tu cuenta para ver tus pedidos y comprar más rápido.",
     },
+    recuperar: {
+      title: "Recuperar contraseña",
+      description:
+        "Te enviamos un enlace por email para elegir una contraseña nueva.",
+    },
+    restablecer: {
+      title: "Nueva contraseña",
+      description: "Elegí una contraseña nueva para tu cuenta.",
+    },
     admin: {
       title: "Panel de administración",
       description:

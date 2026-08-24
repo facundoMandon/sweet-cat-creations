@@ -148,6 +148,8 @@ export interface ContentConfig {
     | "checkout"
     | "pedidos"
     | "login"
+    | "recuperar"
+    | "restablecer"
     | "admin",
     PageSeo
   >;

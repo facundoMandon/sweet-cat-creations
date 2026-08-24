@@ -124,6 +124,7 @@ function AdminProductos() {
       renderForm={({ row, close }) => (
         <ProductoForm
           producto={row}
+          categorias={cats ?? []}
           subcats={subcats ?? []}
           estados={estados ?? []}
           eventos={eventos ?? []}

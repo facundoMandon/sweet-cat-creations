@@ -67,6 +67,26 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
   res.json({ success: true, data: await service.me(Number(req.user.id)) });
 });
 
+export const google = asyncHandler(async (req: Request, res: Response) => {
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  responder(res, await service.loginConGoogle(body["idToken"] ?? body["credential"]));
+});
+
+/** Siempre responde igual: no revela si el email existe. */
+export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+  await service.solicitarReset(req.body ?? {});
+  res.json({
+    success: true,
+    message:
+      "Si el email está registrado, te enviamos las instrucciones para restablecer la contraseña.",
+  });
+});
+
+export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  await service.restablecerPassword(req.body ?? {});
+  res.json({ success: true, message: "Tu contraseña fue actualizada." });
+});
+
 export const logout = asyncHandler(async (_req: Request, res: Response) => {
   clearRefreshCookie(res);
   res.json({ success: true });

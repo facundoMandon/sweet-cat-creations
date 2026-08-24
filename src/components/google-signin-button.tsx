@@ -23,17 +23,15 @@ interface GoogleIdentity {
   };
 }
 
-declare global {
-  interface Window {
-    google?: GoogleIdentity;
-  }
+function gsi(): GoogleIdentity | undefined {
+  return (window as unknown as { google?: GoogleIdentity }).google;
 }
 
 let scriptPromise: Promise<void> | null = null;
 
 function loadScript(): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
-  if (window.google?.accounts?.id) return Promise.resolve();
+  if (gsi()?.accounts?.id) return Promise.resolve();
   if (scriptPromise) return scriptPromise;
   scriptPromise = new Promise<void>((resolve, reject) => {
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${SRC}"]`);
@@ -72,15 +70,16 @@ export function GoogleSignInButton({
     let activo = true;
     void loadScript()
       .then(() => {
-        if (!activo || !ref.current || !window.google) return;
-        window.google.accounts.id.initialize({
+        const google = gsi();
+        if (!activo || !ref.current || !google) return;
+        google.accounts.id.initialize({
           client_id: CLIENT_ID,
           callback: (res) => {
             if (res.credential) void callbackRef.current(res.credential);
             else onError?.("Google no devolvió credenciales");
           },
         });
-        window.google.accounts.id.renderButton(ref.current, {
+        google.accounts.id.renderButton(ref.current, {
           type: "standard",
           theme: "outline",
           size: "large",

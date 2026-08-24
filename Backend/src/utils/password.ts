@@ -15,7 +15,12 @@ export function hashPassword(password: string): string {
   return `pbkdf2$${ITERATIONS}$${salt.toString("base64")}$${hash.toString("base64")}`;
 }
 
-export function verifyPassword(password: string, stored: string): boolean {
+export function verifyPassword(
+  password: string,
+  stored: string | null | undefined
+): boolean {
+  // Cuentas sólo-Google no tienen hash local: nunca validan por contraseña.
+  if (!stored) return false;
   const parts = stored.split("$");
   if (parts.length !== 4 || parts[0] !== "pbkdf2") return false;
   const iterations = Number(parts[1]);

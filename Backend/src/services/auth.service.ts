@@ -1,7 +1,12 @@
-import { Cliente, Usuario } from "../models/index.js";
+import crypto from "node:crypto";
+import { sequelize } from "../config/database.js";
+import { Cliente, PasswordReset, Usuario } from "../models/index.js";
 import { badRequest, unauthorized } from "../utils/AppError.js";
 import { requiredEmail, requiredString } from "../utils/validation.js";
-import { verifyPassword } from "../utils/password.js";
+import { hashPassword, verifyPassword } from "../utils/password.js";
+import { verifyGoogleIdToken } from "../utils/google.js";
+import { passwordResetTemplate, sendMail } from "../utils/mailer.js";
+import { APP_BASE_URL } from "./calendar.service.js";
 import {
   signToken,
   verifyRefreshToken,

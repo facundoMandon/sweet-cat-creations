@@ -10,9 +10,7 @@ import nodemailer, { type Transporter } from "nodemailer";
 let transporter: Transporter | null = null;
 
 export function mailerConfigurado(): boolean {
-  return Boolean(
-    process.env["SMTP_HOST"] && process.env["SMTP_USER"] && process.env["SMTP_PASS"]
-  );
+  return Boolean(process.env["SMTP_HOST"] && process.env["SMTP_USER"] && process.env["SMTP_PASS"]);
 }
 
 function getTransporter(): Transporter | null {
@@ -41,11 +39,19 @@ export interface MailInput {
 /** Devuelve true si el mail salió; false si el SMTP no está configurado o falló. */
 export async function sendMail(input: MailInput): Promise<boolean> {
   const tx = getTransporter();
+
   if (!tx) {
     console.warn("[mailer] SMTP no configurado: no se envió el email a", input.to);
     return false;
   }
+
   try {
+    console.log("[mailer] Verificando conexión SMTP...");
+
+    await tx.verify();
+
+    console.log("[mailer] Conexión SMTP OK");
+
     await tx.sendMail({
       from: process.env["MAIL_FROM"] ?? process.env["SMTP_USER"]!,
       to: input.to,
@@ -53,6 +59,9 @@ export async function sendMail(input: MailInput): Promise<boolean> {
       text: input.text,
       html: input.html,
     });
+
+    console.log("[mailer] Email enviado correctamente");
+
     return true;
   } catch (err) {
     console.error("[mailer] Error enviando email:", err);

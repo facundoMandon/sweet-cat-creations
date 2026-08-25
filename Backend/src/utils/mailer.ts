@@ -1,38 +1,26 @@
-import nodemailer, { type Transporter } from "nodemailer";
+import { Resend } from "resend";
 
 /**
- * Envío de emails por SMTP (Gmail u otro proveedor).
+ * Envío de emails mediante la API HTTP de Resend.
  * Configuración por variables de entorno:
- *   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_FROM
+ *   RESEND_API_KEY, MAIL_FROM, APP_NAME
  * Si falta configuración, el envío no rompe la app: se loguea y se avisa.
  */
 
-let transporter: Transporter | null = null;
+let resend: Resend | null = null;
 
 export function mailerConfigurado(): boolean {
-  return Boolean(process.env["SMTP_HOST"] && process.env["SMTP_USER"] && process.env["SMTP_PASS"]);
+  return Boolean(process.env["RESEND_API_KEY"]);
 }
 
-function getTransporter(): Transporter | null {
+function getResend(): Resend | null {
   if (!mailerConfigurado()) return null;
-  if (transporter) return transporter;
-  const port = Number(process.env["SMTP_PORT"] ?? 587);
-  transporter = nodemailer.createTransport({
-    host: process.env["SMTP_HOST"]!,
-    port,
-    secure: port === 465,
-    auth: {
-      user: process.env["SMTP_USER"]!,
-      pass: process.env["SMTP_PASS"]!,
-    },
+  if (resend) return resend;
+  resend = new Resend(process.env["RESEND_API_KEY"]);
+  console.log("[mailer] Cliente Resend inicializado", {
+    from: process.env["MAIL_FROM"] ?? "onboarding@resend.dev",
   });
-  console.log("[mailer] SMTP config:", {
-    host: process.env["SMTP_HOST"],
-    port: process.env["SMTP_PORT"],
-    user: process.env["SMTP_USER"],
-    secure: Number(process.env["SMTP_PORT"] ?? 587) === 465,
-  });
-  return transporter;
+  return resend;
 }
 
 export interface MailInput {
@@ -42,38 +30,39 @@ export interface MailInput {
   text: string;
 }
 
-/** Devuelve true si el mail salió; false si el SMTP no está configurado o falló. */
+/** Devuelve true si Resend aceptó el email; false si falta config o falló. */
 export async function sendMail(input: MailInput): Promise<boolean> {
-  const tx = getTransporter();
+  const client = getResend();
 
-  if (!tx) {
-    console.warn("[mailer] SMTP no configurado: no se envió el email a", input.to);
+  if (!client) {
+    console.warn("[mailer] Resend no configurado: no se envió el email a", input.to);
     return false;
   }
 
   try {
-    console.log("[mailer] Verificando conexión SMTP...");
+    console.log("[mailer] Enviando email mediante Resend...");
 
-    await tx.verify();
-
-    console.log("[mailer] Conexión SMTP OK");
-
-    await tx.sendMail({
-      from: process.env["MAIL_FROM"] ?? process.env["SMTP_USER"]!,
-      to: input.to,
+    const { data, error } = await client.emails.send({
+      from: process.env["MAIL_FROM"] ?? "onboarding@resend.dev",
+      to: [input.to],
       subject: input.subject,
       text: input.text,
       html: input.html,
     });
 
-    console.log("[mailer] Email enviado correctamente");
+    if (error) {
+      console.error("[mailer] Error de Resend:", error);
+      return false;
+    }
 
+    console.log("[mailer] Email enviado correctamente:", data?.id);
     return true;
   } catch (err) {
-    console.error("[mailer] Error enviando email:", err);
+    console.error("[mailer] Error de Resend:", err);
     return false;
   }
 }
+
 
 const APP_NAME = process.env["APP_NAME"] ?? "Black Cats";
 

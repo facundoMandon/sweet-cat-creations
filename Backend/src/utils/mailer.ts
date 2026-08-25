@@ -26,6 +26,12 @@ function getTransporter(): Transporter | null {
       pass: process.env["SMTP_PASS"]!,
     },
   });
+  console.log("[mailer] SMTP config:", {
+    host: process.env["SMTP_HOST"],
+    port: process.env["SMTP_PORT"],
+    user: process.env["SMTP_USER"],
+    secure: Number(process.env["SMTP_PORT"] ?? 587) === 465,
+  });
   return transporter;
 }
 
